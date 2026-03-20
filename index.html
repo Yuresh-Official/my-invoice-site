@@ -6,10 +6,48 @@
     <title>Kumara Auto Mobile - Dynamic Invoice</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        :root { --primary: #1a2a3a; --accent: #d35400; }
+        :root { --primary: #1a2a3a; --accent: #d35400; --avurudu-gold: #FFD700; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; padding: 10px; display: flex; flex-direction: column; align-items: center; }
 
+        /* --- Avurudu Animation Styles --- */
+        #avurudu-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #e67e22, #d35400);
+            z-index: 9999; display: flex; justify-content: center; align-items: center;
+            color: white; transition: opacity 0.8s ease; text-align: center;
+        }
+        .wish-text { font-size: 3em; margin-bottom: 20px; text-shadow: 3px 3px 15px rgba(0,0,0,0.3); animation: bounce 2s infinite; }
+        .animation-box { display: flex; gap: 60px; justify-content: center; margin-bottom: 40px; }
+        
+        /* Swing Animation */
+        .swing-wrap { transform-origin: top center; animation: swing-move 3s ease-in-out infinite; font-size: 80px; }
+        @keyframes swing-move {
+            0% { transform: rotate(-20deg); }
+            50% { transform: rotate(20deg); }
+            100% { transform: rotate(-20deg); }
+        }
+
+        /* Raban/Drum Animation */
+        .raban-wrap { font-size: 80px; animation: beat 0.5s ease-in-out infinite alternate; }
+        @keyframes beat {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .enter-btn {
+            padding: 15px 45px; font-size: 1.2em; background: var(--avurudu-gold);
+            color: #333; border: none; border-radius: 50px; cursor: pointer;
+            font-weight: 900; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: 0.3s;
+        }
+        .enter-btn:hover { transform: scale(1.1); background: #fff; }
+
+        /* --- Existing Invoice Styles --- */
         .controls { width: 100%; max-width: 800px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
         .btn { flex: 1; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; text-transform: uppercase; min-width: 140px; }
         .btn-add { background: #2980b9; }
@@ -55,15 +93,25 @@
         .footer { margin-top: auto; font-size: 0.8em; color: #555; text-align: center; padding-top: 10px; border-top: 1px solid #eee; }
         .warranty-input { border: none; border-bottom: 1px dashed #999; width: 40px; text-align: center; font-weight: bold; outline: none; background: transparent; }
         
-        #devModal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        #devModal { display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .modal-content { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 500px; text-align: center; border-top: 12px solid var(--accent); }
         .close-btn { margin-top: 25px; background: var(--primary); color: white; padding: 10px 25px; border: none; border-radius: 5px; cursor: pointer; }
 
         .btn-remove { color: #e74c3c; cursor: pointer; border: none; background: none; font-weight: bold; font-size: 1.2em; }
-        .pdf-mode .btn-remove, .pdf-mode .controls, .pdf-mode .logo-text, .pdf-mode #devModal { display: none !important; }
+        .pdf-mode .btn-remove, .pdf-mode .controls, .pdf-mode .logo-text, .pdf-mode #devModal, .pdf-mode #avurudu-overlay { display: none !important; }
     </style>
 </head>
 <body>
+
+    <div id="avurudu-overlay">
+        <div class="animation-container">
+            <h1 class="wish-text">සුබ අලුත් අවුරුද්දක් වේවා!</h1>
+            <div class="animation-box">
+                <div class="swing-wrap" title="Onchilla">🪑</div> <div class="raban-wrap" title="Raban">🥁</div> </div>
+            <p style="margin-bottom: 20px; font-weight: bold;">Kumara Auto Mobile වෙතින් ඔබ සැමට...</p>
+            <button class="enter-btn" onclick="closeAvurudu()">ඉදිරියට යන්න</button>
+        </div>
+    </div>
 
     <div class="controls">
         <button class="btn btn-add" onclick="addNewRow()">+ Add Service</button>
@@ -147,16 +195,20 @@
     <script>
         document.getElementById('currentDate').value = new Date().toLocaleDateString('en-GB');
 
+        function closeAvurudu() {
+            const overlay = document.getElementById('avurudu-overlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => { overlay.style.display = 'none'; }, 800);
+        }
+
         function toggleModal() {
             const modal = document.getElementById('devModal');
             modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
         }
 
-        // IMAGE PREVIEW FUNCTION FIXED
         function previewLogo(input) {
             const preview = document.getElementById('logo-preview');
             const placeholder = document.getElementById('logo-placeholder');
-            
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -184,10 +236,6 @@
             if (el.value.trim() === "") { box.classList.add('hide-if-empty'); } 
             else { box.classList.remove('hide-if-empty'); }
         }
-
-        document.querySelectorAll('.detail-box input').forEach(inp => {
-            if(inp.placeholder.includes("Enter")) inp.parentElement.classList.add('hide-if-empty');
-        });
 
         function addNewRow() {
             const tbody = document.getElementById('tableBody');
