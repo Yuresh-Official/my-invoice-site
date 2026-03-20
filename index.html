@@ -6,29 +6,32 @@
     <title>Professional Auto Parts Invoice</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f3f4f6; margin: 0; padding: 0; }
+        /* PDF එකේ මායිම් වල ඇති හිඩැස් ඉවත් කිරීමට CSS Reset එකක් එක් කළා */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        /* බටන් එක වෙබ් අඩවියේදී පමණක් පෙනේ */
-        .no-print { max-width: 800px; margin: 20px auto; padding: 0 10px; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f3f4f6; padding: 20px; }
+        
+        .no-print { max-width: 800px; margin: 0 auto 20px auto; padding: 0 10px; }
         .download-btn { width: 100%; background: #1a56db; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; }
         
-        /* ඉන්වොයිසියේ ප්‍රධාන රාමුව */
+        /* ඉන්වොයිස් එකේ සම්පූර්ණ දිග A4 ප්‍රමාණයට ගැලපෙන සේ සකස් කළා */
         .invoice-wrapper { 
-            width: 800px; /* දිග ස්ථිර කළා */
+            width: 794px; /* A4 width in pixels approx */
             margin: auto; 
             background: #fff; 
-            min-height: 1000px;
+            min-height: 1123px; /* A4 height approx */
             box-shadow: 0 0 20px rgba(0,0,0,0.1); 
         }
 
-        /* Header එක පසෙකට පැනීම වැළැක්වීමට කළ වෙනස්කම් */
+        /* Header එකේ මායිම් වල ඇති හිඩැස් (Margins) සම්පූර්ණයෙන්ම ඉවත් කළා */
         .black-header { 
             background: #000; 
             color: #fff; 
-            padding: 40px 20px; 
+            padding: 45px 20px; 
             text-align: center; 
             position: relative;
-            box-sizing: border-box; /* දිග නිවැරදිව පවත්වා ගැනීමට */
+            width: 100%; 
+            display: block;
         }
         
         .company-name { 
@@ -44,27 +47,24 @@
             text-transform: uppercase;
         }
         
-        .company-sub { font-size: 12px; margin: 8px 0; width: 100%; background: transparent; border: none; color: #bbb; text-align: center; outline: none; }
+        .company-sub { font-size: 12px; margin: 10px 0; width: 100%; background: transparent; border: none; color: #bbb; text-align: center; outline: none; }
         .company-tel { font-size: 16px; font-weight: bold; width: 100%; background: transparent; border: none; color: white; text-align: center; outline: none; }
         
-        .location-tag { position: absolute; right: 30px; bottom: 20px; font-size: 24px; font-weight: 800; background: transparent; border: none; color: white; width: 80px; text-align: right; outline: none; }
+        .location-tag { position: absolute; right: 30px; bottom: 20px; font-size: 24px; font-weight: 800; background: transparent; border: none; color: white; width: 100px; text-align: right; outline: none; }
 
-        /* විස්තර ඇතුළත් කරන ප්‍රදේශය */
-        .content-area { padding: 40px; box-sizing: border-box; }
-        .info-row { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 30px; }
+        .content-area { padding: 50px; }
+        .info-row { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 30px; }
         .info-input { border: none; outline: none; font-size: 16px; background: transparent; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { background: #000; color: white; padding: 12px; text-align: left; font-size: 14px; text-transform: uppercase; }
-        td { border-bottom: 1px solid #eee; padding: 12px; }
+        th { background: #000; color: white; padding: 12px; text-align: left; font-size: 14px; }
+        td { border-bottom: 1px solid #eee; padding: 15px 12px; }
         
         input.table-input { border: none; width: 100%; font-size: 14px; outline: none; background: transparent; }
-        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type=number] { -moz-appearance: textfield; }
-
+        
         .add-btn { background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 20px; font-weight: bold; }
         
-        .totals { margin-top: 40px; text-align: right; border-top: 2px solid #000; padding-top: 15px; }
+        .totals { margin-top: 50px; text-align: right; border-top: 2px solid #000; padding-top: 20px; }
         .total-text { font-size: 24px; font-weight: bold; }
     </style>
 </head>
@@ -84,7 +84,7 @@
 
         <div class="content-area">
             <div class="info-row">
-                <span>M/s: <input type="text" class="info-input" placeholder="Customer Name" style="width: 300px;"></span>
+                <span>M/s: <input type="text" class="info-input" placeholder="Customer Name" style="width: 350px;"></span>
                 <span>Date: <input type="text" id="date" class="info-input" style="width: 120px; text-align: right;"></span>
             </div>
 
@@ -143,12 +143,12 @@
 
         function downloadPDF() {
             const element = document.getElementById('invoice');
-            // PDF එක නිවැරදිව පේජ් එක මැදට එන ලෙස මාජින් සකස් කළා
+            // මෙහිදී margin: 0 ලෙස සැකසීමෙන් ඔබ පෙන්වූ සුදු හිඩැස සම්පූර්ණයෙන්ම ඉවත් වේ
             const opt = {
-                margin: 0,
+                margin: 0, 
                 filename: 'Invoice.pdf',
                 image: { type: 'jpeg', quality: 1 },
-                html2canvas: { scale: 3, useCORS: true, letterRendering: true },
+                html2canvas: { scale: 4, useCORS: true, logging: false },
                 jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
             html2pdf().from(element).set(opt).save();
