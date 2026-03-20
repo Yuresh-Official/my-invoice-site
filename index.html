@@ -3,132 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kumara Auto Mobile - Invoice Generator</title>
+    <title>Kumara Auto Mobile - Professional Invoice</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root { 
-            --invoice-width: 794px; 
-            --invoice-height: 1123px; 
+            --invoice-width: 800px; 
             --primary-black: #000000;
-            --accent-color: #f2f2f2;
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
         body { background-color: #525659; display: flex; flex-direction: column; align-items: center; padding: 40px 0; }
 
+        /* Control Panel */
         .control-panel { width: var(--invoice-width); margin-bottom: 20px; display: flex; gap: 10px; }
         .btn { padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; }
         .download-btn { background: #27ae60; color: white; flex-grow: 1; }
         .add-btn { background: #2980b9; color: white; }
         .btn:hover { opacity: 0.9; transform: translateY(-1px); }
 
+        /* Invoice Container */
         #invoice-wrapper { 
             background: white; 
             width: var(--invoice-width); 
-            min-height: var(--invoice-height);
-            padding: 50px; 
+            min-height: 1120px;
+            padding: 0; 
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            position: relative;
             display: flex;
             flex-direction: column;
-            position: relative;
         }
 
-        /* Invoice Header Style */
-        .header-section { border-bottom: 3px solid var(--primary-black); padding-bottom: 20px; margin-bottom: 30px; }
-        .company-name { font-size: 36px; font-weight: 900; letter-spacing: 1px; margin-bottom: 5px; }
-        .sub-header { font-size: 13px; font-weight: 600; color: #444; margin-bottom: 5px; }
-        .contact-info { font-size: 14px; font-weight: 500; }
+        /* Black Header Section */
+        .black-header {
+            background-color: var(--primary-black);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+        }
+        .company-name { font-size: 40px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+        .sub-header { font-size: 13px; font-weight: 400; opacity: 0.9; margin: 10px 0; }
+        .contact-info { font-size: 18px; font-weight: 700; }
+        .uae-label { position: absolute; bottom: 15px; right: 30px; font-size: 30px; font-weight: 900; }
 
-        .invoice-label { position: absolute; top: 50px; right: 50px; font-size: 40px; font-weight: 900; color: #ededed; text-transform: uppercase; }
+        .main-content { padding: 40px 50px; flex-grow: 1; }
 
+        /* Bill Details */
         .bill-details { display: flex; justify-content: space-between; margin-bottom: 40px; }
-        .input-group label { display: block; font-size: 11px; font-weight: 800; color: #777; margin-bottom: 5px; }
-        .editable-input { border: none; border-bottom: 1px solid #ccc; padding: 5px 0; font-size: 15px; font-weight: 600; outline: none; width: 250px; }
-        .editable-input:focus { border-bottom-color: var(--primary-black); }
+        .input-group label { font-size: 14px; font-weight: 700; color: #333; margin-right: 5px; }
+        .editable-input { border: none; border-bottom: 1px solid #ccc; padding: 5px 0; font-size: 15px; outline: none; width: 250px; background: transparent; }
 
         /* Table Style */
-        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        .items-table th { background: var(--primary-black); color: white; padding: 12px; text-align: left; font-size: 13px; text-transform: uppercase; }
-        .items-table td { padding: 10px; border-bottom: 1px solid #eee; }
+        .items-table { width: 100%; border-collapse: collapse; margin-top: 10px; border: 1px solid var(--primary-black); }
+        .items-table th { background: var(--primary-black); color: white; padding: 12px; text-align: left; font-size: 14px; text-transform: uppercase; }
+        .items-table td { padding: 10px; border: 1px solid #ddd; }
         
-        .desc-cell { width: 55%; }
-        .val-cell { width: 15%; text-align: center; }
-        .amt-cell { width: 15%; text-align: right; font-weight: 700; }
-
         .table-input { border: none; width: 100%; padding: 5px; font-size: 14px; outline: none; background: transparent; }
-        .table-input:focus { background: #f9f9f9; }
         .num-input { text-align: center; }
 
-        /* Footer/Total Style */
-        .footer-section { margin-top: auto; display: flex; justify-content: flex-end; }
-        .total-box { background: var(--primary-black); color: white; padding: 20px; width: 300px; text-align: right; border-radius: 4px; }
-        .total-label { font-size: 12px; font-weight: 400; opacity: 0.8; }
-        .total-val { font-size: 28px; font-weight: 800; display: block; margin-top: 5px; }
+        /* Grand Total Section */
+        .total-container {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        .total-line { width: 250px; height: 1.5px; background: black; margin-bottom: 10px; }
+        .grand-total-text { font-size: 22px; font-weight: 800; }
 
+        /* Watermark */
+        .watermark { position: absolute; top: 130px; right: 40px; font-size: 60px; font-weight: 900; color: rgba(0,0,0,0.05); pointer-events: none; }
+
+        /* PDF Styling */
         .pdf-mode .btn, .pdf-mode .control-panel { display: none !important; }
     </style>
 </head>
 <body>
 
     <div class="control-panel">
-        <button class="btn add-btn" onclick="addNewRow()">+ අලුත් අයිතමයක් එක් කරන්න</button>
+        <button class="btn add-btn" onclick="addNewRow()">+ Add New Item</button>
         <button class="btn download-btn" onclick="generatePDF()">DOWNLOAD INVOICE (PDF)</button>
     </div>
 
     <div id="invoice-wrapper">
-        <div class="invoice-label">INVOICE</div>
-        
-        <div class="header-section">
+        <div class="watermark">INVOICE</div>
+
+        <div class="black-header">
             <div class="company-name" contenteditable="true">KUMARA AUTO MOBILE</div>
             <div class="sub-header" contenteditable="true">DEALS IN ALL KINDS OF FORKLIFTS, JCB & HEAVY EQUIPMENT SPARE PARTS</div>
-            <div class="contact-info" contenteditable="true">Tel: 0565762783 | UAE</div>
+            <div class="contact-info" contenteditable="true">Tel : 0565762783</div>
+            <div class="uae-label">UAE</div>
         </div>
 
-        <div class="bill-details">
-            <div class="input-group">
-                <label>BILL TO</label>
-                <input type="text" class="editable-input" placeholder="පාරිභෝගිකයාගේ නම">
+        <div class="main-content">
+            <div class="bill-details">
+                <div class="input-group">
+                    <label>M/s:</label>
+                    <input type="text" class="editable-input" placeholder="Customer Name">
+                </div>
+                <div class="input-group" style="text-align: right;">
+                    <label>Date:</label>
+                    <input type="text" id="cur-date" class="editable-input" style="width: 120px; text-align: right;">
+                </div>
             </div>
-            <div class="input-group" style="text-align: right;">
-                <label>DATE</label>
-                <input type="text" id="cur-date" class="editable-input" style="width: 150px; text-align: right;">
-            </div>
-        </div>
 
-        <table class="items-table">
-            <thead>
-                <tr>
-                    <th>Description</th>
-                    <th style="text-align: center;">Rate</th>
-                    <th style="text-align: center;">Qty</th>
-                    <th style="text-align: right;">Amount</th>
-                </tr>
-            </thead>
-            <tbody id="table-body">
-                </tbody>
-        </table>
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50%;">Description</th>
+                        <th style="text-align: center;">Rate</th>
+                        <th style="text-align: center;">Qty</th>
+                        <th style="text-align: right;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body"></tbody>
+            </table>
 
-        <div class="footer-section">
-            <div class="total-box">
-                <span class="total-label">GRAND TOTAL</span>
-                <span class="total-val" id="final-total">0.00</span>
+            <div class="total-container">
+                <div class="total-line"></div>
+                <div class="grand-total-text">Grand Total : <span id="final-total">0.00</span></div>
             </div>
         </div>
     </div>
 
     <script>
-        // වර්තමාන දිනය සැකසීම
         document.getElementById('cur-date').value = new Date().toLocaleDateString();
 
         function addNewRow() {
             const body = document.getElementById('table-body');
             const row = body.insertRow();
             row.innerHTML = `
-                <td class="desc-cell"><input type="text" class="table-input" placeholder="අමතර කොටසේ නම..."></td>
-                <td class="val-cell"><input type="number" class="table-input num-input rate" value="0" oninput="calculate()"></td>
-                <td class="val-cell"><input type="number" class="table-input num-input qty" value="0" oninput="calculate()"></td>
-                <td class="amt-cell"><span class="subtotal">0.00</span></td>
+                <td><input type="text" class="table-input" placeholder="Enter item..."></td>
+                <td><input type="number" class="table-input num-input rate" value="0" oninput="calculate()"></td>
+                <td><input type="number" class="table-input num-input qty" value="1" oninput="calculate()"></td>
+                <td style="text-align: right; font-weight: bold;"><span class="subtotal">0.00</span></td>
             `;
+            calculate();
         }
 
         function calculate() {
@@ -147,18 +157,20 @@
 
         function generatePDF() {
             const element = document.getElementById('invoice-wrapper');
+            document.body.classList.add('pdf-mode');
+            
             const opt = {
                 margin: 0,
                 filename: 'Kumara_Auto_Invoice.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
+                html2canvas: { scale: 3, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            html2pdf().from(element).set(opt).save();
+            html2pdf().from(element).set(opt).save().then(() => {
+                document.body.classList.remove('pdf-mode');
+            });
         }
-
-        // මුලින්ම එක් පේළියක් පෙන්වීමට
         addNewRow();
     </script>
 </body>
