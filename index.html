@@ -14,14 +14,12 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
         body { background-color: #525659; display: flex; flex-direction: column; align-items: center; padding: 40px 0; }
 
-        /* Control Panel */
         .control-panel { width: var(--invoice-width); margin-bottom: 20px; display: flex; gap: 10px; }
         .btn { padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; }
         .download-btn { background: #27ae60; color: white; flex-grow: 1; }
         .add-btn { background: #2980b9; color: white; }
         .btn:hover { opacity: 0.9; transform: translateY(-1px); }
 
-        /* Invoice Container */
         #invoice-wrapper { 
             background: white; 
             width: var(--invoice-width); 
@@ -34,47 +32,54 @@
         }
 
         /* Black Header Section */
-        .black-header {
-            background-color: var(--primary-black);
+        .header-box {
+            background: var(--primary-black);
             color: white;
-            padding: 40px 30px;
+            padding: 40px 20px;
             text-align: center;
-            position: relative;
         }
-        .company-name { font-size: 40px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
-        .sub-header { font-size: 13px; font-weight: 400; opacity: 0.9; margin: 10px 0; }
-        .contact-info { font-size: 18px; font-weight: 700; }
-        .uae-label { position: absolute; bottom: 15px; right: 30px; font-size: 30px; font-weight: 900; }
+        .company-name { font-size: 38px; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
+        .sub-header { font-size: 13px; font-weight: 400; opacity: 0.9; margin-bottom: 5px; }
+        .contact-info { font-size: 16px; font-weight: 600; }
+        .uae-tag { position: absolute; right: 40px; top: 120px; font-size: 30px; font-weight: 900; color: white; }
+
+        /* Invoice Label Watermark */
+        .invoice-label { 
+            position: absolute; 
+            top: 170px; 
+            right: 40px; 
+            font-size: 60px; 
+            font-weight: 900; 
+            color: rgba(0,0,0,0.05); 
+            text-transform: uppercase; 
+            pointer-events: none;
+        }
 
         .main-content { padding: 40px 50px; flex-grow: 1; }
 
         /* Bill Details */
-        .bill-details { display: flex; justify-content: space-between; margin-bottom: 40px; }
-        .input-group label { font-size: 14px; font-weight: 700; color: #333; margin-right: 5px; }
-        .editable-input { border: none; border-bottom: 1px solid #ccc; padding: 5px 0; font-size: 15px; outline: none; width: 250px; background: transparent; }
+        .bill-details { display: flex; justify-content: space-between; margin-bottom: 30px; }
+        .input-group label { font-size: 14px; font-weight: 800; color: #000; margin-right: 5px; }
+        .editable-input { border: none; border-bottom: 1.5px solid #000; padding: 2px 0; font-size: 15px; outline: none; width: 250px; }
 
-        /* Table Style */
-        .items-table { width: 100%; border-collapse: collapse; margin-top: 10px; border: 1px solid var(--primary-black); }
+        /* Table Styling */
+        .items-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         .items-table th { background: var(--primary-black); color: white; padding: 12px; text-align: left; font-size: 14px; text-transform: uppercase; }
-        .items-table td { padding: 10px; border: 1px solid #ddd; }
+        .items-table td { padding: 10px; border-bottom: 1px solid #eee; }
         
         .table-input { border: none; width: 100%; padding: 5px; font-size: 14px; outline: none; background: transparent; }
         .num-input { text-align: center; }
 
-        /* Grand Total Section */
-        .total-container {
+        /* Grand Total - Clean Style */
+        .total-section {
             margin-top: 30px;
             display: flex;
             flex-direction: column;
             align-items: flex-end;
         }
-        .total-line { width: 250px; height: 1.5px; background: black; margin-bottom: 10px; }
-        .grand-total-text { font-size: 22px; font-weight: 800; }
+        .total-hr { width: 250px; height: 2px; background: #000; margin-bottom: 10px; }
+        .grand-total-box { font-size: 24px; font-weight: 800; color: #000; }
 
-        /* Watermark */
-        .watermark { position: absolute; top: 130px; right: 40px; font-size: 60px; font-weight: 900; color: rgba(0,0,0,0.05); pointer-events: none; }
-
-        /* PDF Styling */
         .pdf-mode .btn, .pdf-mode .control-panel { display: none !important; }
     </style>
 </head>
@@ -86,13 +91,12 @@
     </div>
 
     <div id="invoice-wrapper">
-        <div class="watermark">INVOICE</div>
+        <div class="invoice-label">INVOICE</div>
 
-        <div class="black-header">
+        <div class="header-box">
             <div class="company-name" contenteditable="true">KUMARA AUTO MOBILE</div>
             <div class="sub-header" contenteditable="true">DEALS IN ALL KINDS OF FORKLIFTS, JCB & HEAVY EQUIPMENT SPARE PARTS</div>
-            <div class="contact-info" contenteditable="true">Tel : 0565762783</div>
-            <div class="uae-label">UAE</div>
+            <div class="contact-info" contenteditable="true">Tel : 0565762783 | UAE</div>
         </div>
 
         <div class="main-content">
@@ -116,12 +120,15 @@
                         <th style="text-align: right;">Amount</th>
                     </tr>
                 </thead>
-                <tbody id="table-body"></tbody>
+                <tbody id="table-body">
+                </tbody>
             </table>
 
-            <div class="total-container">
-                <div class="total-line"></div>
-                <div class="grand-total-text">Grand Total : <span id="final-total">0.00</span></div>
+            <div class="total-section">
+                <div class="total-hr"></div>
+                <div class="grand-total-box">
+                    Grand Total : <span id="final-total">0.00</span>
+                </div>
             </div>
         </div>
     </div>
@@ -133,7 +140,7 @@
             const body = document.getElementById('table-body');
             const row = body.insertRow();
             row.innerHTML = `
-                <td><input type="text" class="table-input" placeholder="Enter item..."></td>
+                <td><input type="text" class="table-input" placeholder="Enter item description..."></td>
                 <td><input type="number" class="table-input num-input rate" value="0" oninput="calculate()"></td>
                 <td><input type="number" class="table-input num-input qty" value="1" oninput="calculate()"></td>
                 <td style="text-align: right; font-weight: bold;"><span class="subtotal">0.00</span></td>
@@ -158,7 +165,7 @@
         function generatePDF() {
             const element = document.getElementById('invoice-wrapper');
             document.body.classList.add('pdf-mode');
-            
+
             const opt = {
                 margin: 0,
                 filename: 'Kumara_Auto_Invoice.pdf',
@@ -171,6 +178,7 @@
                 document.body.classList.remove('pdf-mode');
             });
         }
+
         addNewRow();
     </script>
 </body>
