@@ -6,32 +6,28 @@
     <title>Professional Auto Parts Invoice</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        /* PDF එකට බලපාන ප්‍රධාන සැකසුම් */
         :root { --invoice-width: 794px; --invoice-height: 1123px; }
         
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; }
 
-        .no-print { width: 100%; max-width: 900px; margin-bottom: 20px; }
+        .no-print-area { width: 100%; max-width: 900px; margin-bottom: 20px; }
         .download-btn { width: 100%; background: #1a73e8; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; }
 
         .main-container { display: flex; gap: 20px; width: 100%; max-width: 1250px; justify-content: center; }
 
-        /* Invoice Container - මෙහි ප්‍රමාණය A4 වලට ස්ථාවර කර ඇත */
         #invoice-wrapper { 
             background: white; 
             width: var(--invoice-width); 
             min-height: var(--invoice-height); 
             padding: 0; 
             box-shadow: 0 0 15px rgba(0,0,0,0.1);
-            overflow: hidden; /* පිටතට පැනීම වැළැක්වීමට */
+            overflow: hidden;
         }
 
-        /* LIVE PREVIEW BOX */
         .preview-box { width: 300px; height: 424px; border: 2px solid #ccc; border-radius: 8px; position: sticky; top: 20px; background: #fff; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .preview-content { transform: scale(0.37); transform-origin: top left; pointer-events: none; }
 
-        /* Invoice UI Styles */
         .top-stripe { background: #000; height: 12px; width: 100%; }
         .header { padding: 40px; display: flex; justify-content: space-between; }
         .company-info h1 { font-size: 26px; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
@@ -42,13 +38,44 @@
         .input-line { border: none; border-bottom: 1px solid #ddd; outline: none; padding: 2px; font-weight: bold; width: 220px; }
 
         .items-table { width: 100%; border-collapse: collapse; }
-        .items-table th { background: #f9f9f9; border-top: 2px solid #000; border-bottom: 2px solid #000; padding: 12px 40px; text-align: left; font-size: 12px; }
-        .items-table td { padding: 12px 40px; border-bottom: 1px solid #eee; }
         
-        .item-input { border: none; width: 100%; outline: none; font-size: 14px; }
-        .num-input { width: 70px; padding: 5px; border: 1px solid #eee; border-radius: 4px; text-align: center; }
+        .items-table th { 
+            background: #f9f9f9; 
+            border-top: 2px solid #000; 
+            border-bottom: 2px solid #000; 
+            padding: 12px 10px; 
+            font-size: 12px; 
+            text-align: center; 
+        }
+        .items-table th:first-child { text-align: left; padding-left: 40px; } 
+        .items-table th:last-child { text-align: right; padding-right: 40px; } 
 
-        .add-row { margin: 20px 40px; background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .items-table td { 
+            padding: 10px; 
+            border-bottom: 1px solid #eee; 
+            text-align: center; 
+            vertical-align: middle;
+        }
+        .items-table td:first-child { text-align: left; padding-left: 40px; }
+        .items-table td:last-child { text-align: right; padding-right: 40px; }
+        
+        .item-input { border: none; width: 100%; outline: none; font-size: 14px; background: transparent; }
+        
+        .num-input { 
+            width: 80px; 
+            padding: 6px; 
+            border: 1px solid #e0e0e0; 
+            border-radius: 4px; 
+            text-align: center; 
+            font-size: 14px;
+            outline: none;
+        }
+
+        /* මෙම class එක ඇති දේවල් PDF එකට වැටෙන්නේ නැත */
+        .no-print { display: block; } 
+
+        .add-row { margin: 20px 40px; background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .add-row:hover { background: #218838; }
 
         .footer { margin-top: 50px; padding: 0 40px 40px; display: flex; justify-content: flex-end; }
         .total-box { background: #000; color: #fff; padding: 15px 30px; border-radius: 6px; display: flex; align-items: center; gap: 20px; }
@@ -58,7 +85,7 @@
 </head>
 <body>
 
-    <div class="no-print">
+    <div class="no-print-area">
         <button class="download-btn" onclick="generatePDF()">DOWNLOAD PDF INVOICE</button>
     </div>
 
@@ -85,7 +112,7 @@
                         <th width="50%">Description</th>
                         <th width="15%">Rate</th>
                         <th width="10%">Qty</th>
-                        <th width="25%" style="text-align: right;">Amount</th>
+                        <th width="25%">Amount</th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
@@ -93,7 +120,7 @@
                         <td><input type="text" class="item-input" placeholder="Item description..."></td>
                         <td><input type="number" class="num-input rate" value="0" oninput="calculate()"></td>
                         <td><input type="number" class="num-input qty" value="0" oninput="calculate()"></td>
-                        <td align="right" style="font-weight: bold;"><span class="subtotal">0.00</span></td>
+                        <td style="font-weight: bold;"><span class="subtotal">0.00</span></td>
                     </tr>
                 </tbody>
             </table>
@@ -108,7 +135,7 @@
             </div>
         </div>
 
-        <div class="preview-box no-print">
+        <div class="preview-box no-print-area">
             <div style="background: #333; color: white; text-align: center; font-size: 12px; padding: 5px;">LIVE PREVIEW</div>
             <div id="preview-display" class="preview-content"></div>
         </div>
@@ -124,7 +151,7 @@
                 <td><input type="text" class="item-input" placeholder="Item description..."></td>
                 <td><input type="number" class="num-input rate" value="0" oninput="calculate()"></td>
                 <td><input type="number" class="num-input qty" value="0" oninput="calculate()"></td>
-                <td align="right" style="font-weight: bold;"><span class="subtotal">0.00</span></td>
+                <td style="font-weight: bold;"><span class="subtotal">0.00</span></td>
             `;
             syncPreview();
         }
@@ -149,28 +176,27 @@
             document.getElementById('preview-display').innerHTML = clone;
         }
 
-        // මුලින්ම Preview එක පෙන්වීමට
         syncPreview();
 
         function generatePDF() {
             const element = document.getElementById('invoice-wrapper');
             
-            // වැදගත්: මෙහි Scale එක 1 ට වඩා වැඩි කිරීමෙන් පැහැදිලි බව වැඩි වේ
+            // PDF එක හදන්න කලින් .no-print ඇති දේවල් සඟවන්න
+            const noPrintElements = element.querySelectorAll('.no-print');
+            noPrintElements.forEach(el => el.style.display = 'none');
+
             const opt = {
                 margin: 0,
                 filename: 'Kumara_Auto_Invoice.pdf',
                 image: { type: 'jpeg', quality: 1 },
-                html2canvas: { 
-                    scale: 2, 
-                    useCORS: true,
-                    logging: false,
-                    letterRendering: true,
-                    width: 794 // A4 width pixels
-                },
+                html2canvas: { scale: 2, useCORS: true, width: 794 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            html2pdf().from(element).set(opt).save();
+            // PDF එක සෑදූ පසු නැවත Button එක පෙන්වන්න
+            html2pdf().from(element).set(opt).save().then(() => {
+                noPrintElements.forEach(el => el.style.display = 'block');
+            });
         }
     </script>
 </body>
