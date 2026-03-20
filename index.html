@@ -6,153 +6,142 @@
     <title>Professional Auto Parts Invoice</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        /* සියලුම default මායිම් ඉවත් කිරීම */
+        /* PDF එකේ කිසිදු ගැටලුවක් ඇති නොවන පරිදි සරල මෝස්තරයක් */
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Helvetica', 'Arial', sans-serif; background-color: #f0f0f0; padding: 20px; color: #333; }
         
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f3f4f6; padding: 20px; }
+        .no-print { max-width: 800px; margin: 0 auto 20px; text-align: center; }
+        .download-btn { background: #2563eb; color: white; border: none; padding: 12px 30px; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; }
         
-        .no-print { max-width: 800px; margin: 0 auto 20px auto; }
-        .download-btn { width: 100%; background: #1a56db; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; }
-        
-        /* ඉන්වොයිස් එකේ wrapper එක */
-        .invoice-wrapper { 
+        .invoice-box { 
             width: 800px; 
-            margin: 0 auto; /* වෙබ් එකේදී මැදට පෙන්වීමට */
+            margin: auto; 
             background: #fff; 
-            box-shadow: 0 0 20px rgba(0,0,0,0.1); 
-            overflow: hidden;
+            padding: 40px; 
+            min-height: 1000px;
+            border-top: 8px solid #333; /* ඉහළින් පමණක් සරල කළු තීරුවක් */
         }
 
-        /* කළු පාට Header එක */
-        .black-header { 
-            background: #000 !important; 
-            color: #fff !important; 
-            padding: 45px 20px; 
-            text-align: center; 
-            position: relative;
-            width: 100%;
-            -webkit-print-color-adjust: exact;
-        }
+        .header-table { width: 100%; margin-bottom: 40px; }
+        .comp-title { font-size: 28px; font-weight: bold; text-transform: uppercase; color: #000; }
+        .comp-desc { font-size: 11px; color: #666; margin: 5px 0; }
+        .comp-tel { font-size: 14px; font-weight: bold; }
         
-        .company-name { font-size: 30px; font-weight: 800; color: white; text-align: center; border: none; background: transparent; width: 100%; outline: none; text-transform: uppercase; }
-        .company-sub { font-size: 13px; color: #bbb; text-align: center; border: none; background: transparent; width: 100%; margin-top: 10px; }
-        .company-tel { font-size: 18px; font-weight: bold; color: white; text-align: center; border: none; background: transparent; width: 100%; margin-top: 5px; }
-        .location-tag { position: absolute; right: 30px; bottom: 20px; font-size: 26px; font-weight: 800; color: white; }
+        .invoice-label { font-size: 32px; font-weight: bold; text-align: right; color: #e5e7eb; }
 
-        .content-area { padding: 40px; }
-        .info-row { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 30px; }
-        .info-input { border: none; outline: none; font-size: 16px; background: transparent; }
-        
-        table { width: 100%; border-collapse: collapse; }
-        th { background: #000 !important; color: white !important; padding: 12px; text-align: left; -webkit-print-color-adjust: exact; }
-        td { border-bottom: 1px solid #eee; padding: 15px 12px; }
-        
-        input.table-input { border: none; width: 100%; font-size: 14px; outline: none; }
-        .add-btn { background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 20px; font-weight: bold; }
-        
-        .totals { margin-top: 50px; text-align: right; border-top: 2px solid #000; padding-top: 20px; }
-        .total-text { font-size: 24px; font-weight: bold; }
+        .details-table { width: 100%; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        .input-field { border: none; border-bottom: 1px dashed #ccc; padding: 5px; font-size: 15px; outline: none; }
 
-        /* PDF එක සෑදීමේදී බලපාන විශේෂ නීති */
-        @media print {
-            body { padding: 0; background: none; }
-            .invoice-wrapper { width: 100%; box-shadow: none; margin: 0; }
-            .no-print { display: none; }
-        }
+        table.items-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table.items-table th { background: #f8f9fa; border-bottom: 2px solid #333; padding: 12px; text-align: left; font-size: 14px; }
+        table.items-table td { border-bottom: 1px solid #eee; padding: 12px; }
+        
+        .item-input { border: none; width: 100%; font-size: 14px; outline: none; padding: 5px; }
+        
+        .add-row-btn { background: #10b981; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin-top: 15px; font-size: 13px; }
+
+        .total-section { margin-top: 40px; text-align: right; }
+        .total-box { display: inline-block; background: #f8f9fa; padding: 15px 30px; border-radius: 5px; border: 1px solid #eee; }
+        .total-label { font-size: 18px; font-weight: bold; }
+        .total-amount { font-size: 22px; font-weight: bold; color: #000; margin-left: 20px; }
     </style>
 </head>
 <body>
 
     <div class="no-print">
-        <button class="download-btn" onclick="downloadPDF()">DOWNLOAD PDF INVOICE</button>
+        <button class="download-btn" onclick="generatePDF()">පී.ඩී.එෆ් (PDF) එක ලබාගන්න</button>
     </div>
 
-    <div class="invoice-wrapper" id="invoice">
-        <div class="black-header">
-            <input type="text" class="company-name" value="KUMARA AUTO MOBILE">
-            <input type="text" class="company-sub" value="DEALS IN ALL KINDS OF FORKLIFTS, JCB & HEAVY EQUIPMENT SPARE PARTS">
-            <input type="text" class="company-tel" value="Tel : 0565762783">
-            <div class="location-tag">UAE</div>
+    <div class="invoice-box" id="print-area">
+        <table class="header-table">
+            <tr>
+                <td width="70%">
+                    <div class="comp-title">KUMARA AUTO MOBILE</div>
+                    <div class="comp-desc">DEALS IN ALL KINDS OF FORKLIFTS, JCB & HEAVY EQUIPMENT SPARE PARTS</div>
+                    <div class="comp-tel">Tel: 0565762783</div>
+                </td>
+                <td width="30%" class="invoice-label">INVOICE</td>
+            </tr>
+        </table>
+
+        <div class="details-table">
+            <table width="100%">
+                <tr>
+                    <td>Customer Name: <input type="text" class="input-field" style="width: 250px;" placeholder=".........................................."></td>
+                    <td align="right">Date: <input type="text" id="current-date" class="input-field" style="width: 100px; text-align: right;"></td>
+                </tr>
+            </table>
         </div>
 
-        <div class="content-area">
-            <div class="info-row">
-                <span>M/s: <input type="text" class="info-input" placeholder="Customer Name" style="width: 350px;"></span>
-                <span>Date: <input type="text" id="date" class="info-input" style="width: 120px; text-align: right;"></span>
-            </div>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th width="50%">Description</th>
+                    <th width="15%">Rate</th>
+                    <th width="10%">Qty</th>
+                    <th width="25%" style="text-align: right;">Amount</th>
+                </tr>
+            </thead>
+            <tbody id="items-list">
+                <tr>
+                    <td><input type="text" class="item-input" placeholder="Enter item name..."></td>
+                    <td><input type="number" class="item-input rate-val" placeholder="0.00" oninput="calculateTotal()"></td>
+                    <td><input type="number" class="item-input qty-val" placeholder="1" oninput="calculateTotal()"></td>
+                    <td align="right" style="font-weight: bold;"><span class="row-total">0.00</span></td>
+                </tr>
+            </tbody>
+        </table>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th width="50%">Description</th>
-                        <th width="15%">Rate</th>
-                        <th width="15%">Qty</th>
-                        <th width="20%" style="text-align: right;">Amount</th>
-                    </tr>
-                </thead>
-                <tbody id="item-body">
-                    <tr>
-                        <td><input type="text" class="table-input" placeholder="Item description..."></td>
-                        <td><input type="number" class="table-input rate" placeholder="0.00" oninput="calc()"></td>
-                        <td><input type="number" class="table-input qty" placeholder="1" oninput="calc()"></td>
-                        <td style="text-align: right; font-weight: bold;"><span class="row-total">0.00</span></td>
-                    </tr>
-                </tbody>
-            </table>
+        <button class="add-row-btn no-print" onclick="addNewRow()">+ Add Item</button>
 
-            <button class="add-btn no-print" onclick="addRow()">+ Add New Item</button>
-
-            <div class="totals">
-                <span class="total-text">Total Amount: <span id="grand-total">0.00</span></span>
+        <div class="total-section">
+            <div class="total-box">
+                <span class="total-label">Total Amount:</span>
+                <span class="total-amount" id="final-total">0.00</span>
             </div>
         </div>
     </div>
 
     <script>
-        document.getElementById('date').value = new Date().toLocaleDateString();
+        // අද දිනය සකස් කිරීම
+        document.getElementById('current-date').value = new Date().toLocaleDateString();
 
-        function addRow() {
-            let row = document.getElementById('item-body').insertRow();
-            row.innerHTML = `
-                <td><input type="text" class="table-input" placeholder="Item description..."></td>
-                <td><input type="number" class="table-input rate" placeholder="0.00" oninput="calc()"></td>
-                <td><input type="number" class="table-input qty" placeholder="1" oninput="calc()"></td>
-                <td style="text-align: right; font-weight: bold;"><span class="row-total">0.00</span></td>
+        function addNewRow() {
+            const tableBody = document.getElementById('items-list');
+            const newRow = tableBody.insertRow();
+            newRow.innerHTML = `
+                <td><input type="text" class="item-input" placeholder="Enter item name..."></td>
+                <td><input type="number" class="item-input rate-val" placeholder="0.00" oninput="calculateTotal()"></td>
+                <td><input type="number" class="item-input qty-val" placeholder="1" oninput="calculateTotal()"></td>
+                <td align="right" style="font-weight: bold;"><span class="row-total">0.00</span></td>
             `;
         }
 
-        function calc() {
-            let rates = document.getElementsByClassName('rate');
-            let qtys = document.getElementsByClassName('qty');
-            let sums = document.getElementsByClassName('row-total');
-            let total = 0;
-            for(let i=0; i<rates.length; i++) {
-                let s = (parseFloat(rates[i].value) || 0) * (parseFloat(qtys[i].value) || 0);
-                sums[i].innerText = s.toFixed(2);
-                total += s;
+        function calculateTotal() {
+            const rates = document.getElementsByClassName('rate-val');
+            const qtys = document.getElementsByClassName('qty-val');
+            const rows = document.getElementsByClassName('row-total');
+            let grandTotal = 0;
+
+            for(let i = 0; i < rates.length; i++) {
+                let r = parseFloat(rates[i].value) || 0;
+                let q = parseFloat(qtys[i].value) || 0;
+                let sub = r * q;
+                rows[i].innerText = sub.toFixed(2);
+                grandTotal += sub;
             }
-            document.getElementById('grand-total').innerText = total.toLocaleString(undefined, {minimumFractionDigits: 2});
+            document.getElementById('final-total').innerText = grandTotal.toLocaleString(undefined, {minimumFractionDigits: 2});
         }
 
-        function downloadPDF() {
-            const element = document.getElementById('invoice');
-            
-            // වැදගත්: PDF එකේ මායිම් නැති කිරීමට පහත අගයන් භාවිතා කරන්න
+        function generatePDF() {
+            const element = document.getElementById('print-area');
             const opt = {
-                margin: [0, 0, 0, 0], // වම, දකුණ, උඩ, යට සියල්ල බිංදුව කරන්න
-                filename: 'Invoice.pdf',
-                image: { type: 'jpeg', quality: 1 },
-                html2canvas: { 
-                    scale: 3, 
-                    useCORS: true, 
-                    letterRendering: true,
-                    x: 0, // කැන්වසය හරියටම බිංදුවෙන් පටන් ගන්න
-                    scrollX: 0,
-                    scrollY: 0
-                },
-                jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' }
+                margin: 0.5, // මෙහිදී මායිම් (Margins) ස්වල්පයක් තැබීමෙන් PDF එක පිරිසිදුව පෙනේ
+                filename: 'Invoice_KumaraAuto.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
-            
             html2pdf().set(opt).from(element).save();
         }
     </script>
