@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kumara Auto Mobile - Custom Garage Invoice</title>
+    <title>Kumara Auto Mobile - Professional Garage Invoice</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root { --primary: #1a2a3a; --accent: #d35400; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; padding: 20px; display: flex; flex-direction: column; align-items: center; }
 
-        .controls { width: 100%; max-width: 800px; margin-bottom: 15px; display: flex; gap: 10px; }
-        .btn { flex: 1; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; text-transform: uppercase; }
+        .controls { width: 100%; max-width: 800px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; text-transform: uppercase; min-width: 150px; }
         .btn-add { background: #2980b9; }
         .btn-download { background: #27ae60; }
+        .btn-dev { background: #34495e; } 
 
         #invoice-wrapper { 
             background: white; width: 210mm; height: 297mm; padding: 30px 45px; 
@@ -21,10 +22,7 @@
             overflow: hidden; position: relative;
         }
 
-        #scalable-content {
-            display: flex; flex-direction: column; height: 100%; transition: all 0.2s ease;
-            transform-origin: top center;
-        }
+        #scalable-content { display: flex; flex-direction: column; height: 100%; transition: all 0.2s ease; transform-origin: top center; }
 
         .header { border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
         .company-info { width: 75%; }
@@ -38,7 +36,6 @@
         .detail-box label { font-size: 0.75em; font-weight: 800; color: var(--accent); text-transform: uppercase; }
         .detail-box input { width: 100%; border: none; border-bottom: 1px solid #ddd; padding: 2px 0; font-size: 1.05em; outline: none; background: transparent; }
 
-        /* Hide empty rows in PDF */
         .pdf-mode .empty-data { display: none !important; }
 
         #table-area { flex-grow: 1; margin-bottom: 10px; }
@@ -56,8 +53,14 @@
         .footer { margin-top: auto; font-size: 0.8em; color: #555; text-align: center; padding-top: 10px; border-top: 1px solid #eee; }
         .warranty-input { border: none; border-bottom: 1px dashed #999; width: 40px; text-align: center; font-weight: bold; outline: none; }
         
+        /* Modal Style for About Developer */
+        #devModal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-content { background: white; padding: 40px; border-radius: 15px; width: 90%; max-width: 550px; text-align: center; line-height: 1.8; border-top: 12px solid var(--accent); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .modal-content h2 { margin-bottom: 10px; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+        .close-btn { margin-top: 25px; background: var(--primary); color: white; padding: 10px 25px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+
         .btn-remove { color: #e74c3c; cursor: pointer; border: none; background: none; font-weight: bold; font-size: 1.2em; }
-        .pdf-mode .btn-remove, .pdf-mode .controls, .pdf-mode .logo-text { display: none !important; }
+        .pdf-mode .btn-remove, .pdf-mode .controls, .pdf-mode .logo-text, .pdf-mode #devModal { display: none !important; }
     </style>
 </head>
 <body>
@@ -65,6 +68,26 @@
     <div class="controls">
         <button class="btn btn-add" onclick="addNewRow()">+ Add Part or Service</button>
         <button class="btn btn-download" onclick="generatePDF()">Download PDF</button>
+        <button class="btn btn-dev" onclick="toggleModal()">About Developer</button>
+    </div>
+
+    <div id="devModal">
+        <div class="modal-content">
+            <h2>SYSTEM DEVELOPER</h2>
+            <p style="font-size: 22px; font-weight: 900; color: #d35400; margin-bottom: 20px;">Yuresh Kavindu Sumanasinha</p>
+            
+            <p dir="ltr" style="margin-bottom: 15px; font-size: 16px; color: #333;">
+                මෙම පද්ධතිය "Kumara Auto Mobile" ආයතනයේ අවශ්‍යතාවයන්ට අනුකූලව වඩාත් පහසු සහ විධිමත් ලෙස කටයුතු කරගෙන යාම සඳහා මා විසින් ඉතා කැපවීමෙන් නිර්මාණය කරන ලදී. 
+            </p>
+            
+            <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
+
+            <p dir="rtl" style="font-size: 18px; font-weight: bold; color: #1a2a3a; line-height: 1.4;">
+                لقد قمت بتطوير هذا النظام بجهد كبير لضمان سير العمل في "Kumara Auto Mobile" بكل سهولة واحترافية. نحن نسعى دائماً لتقديم الأفضل.
+            </p>
+
+            <button class="close-btn" onclick="toggleModal()">Close / වසන්න</button>
+        </div>
     </div>
 
     <div id="invoice-wrapper">
@@ -135,20 +158,17 @@
     <script>
         document.getElementById('currentDate').value = new Date().toLocaleDateString('en-GB');
 
-        function checkEmpty(el, id) {
-            const parent = document.getElementById(id);
-            if (el.value.trim() === "") {
-                parent.classList.add('empty-data');
-            } else {
-                parent.classList.remove('empty-data');
-            }
-            autoScale();
+        function toggleModal() {
+            const modal = document.getElementById('devModal');
+            modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
         }
 
-        // Initialize empty status
-        document.querySelectorAll('.detail-box input').forEach(input => {
-            if(input.placeholder.includes("hide")) input.parentElement.classList.add('empty-data');
-        });
+        function checkEmpty(el, id) {
+            const parent = document.getElementById(id);
+            if (el.value.trim() === "") { parent.classList.add('empty-data'); } 
+            else { parent.classList.remove('empty-data'); }
+            autoScale();
+        }
 
         function previewImage(input) {
             if (input.files && input.files[0]) {
