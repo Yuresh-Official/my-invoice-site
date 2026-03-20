@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kumara Auto Mobile - Professional Garage Invoice</title>
+    <title>Kumara Auto Mobile - Custom Garage Invoice</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root { --primary: #1a2a3a; --accent: #d35400; }
@@ -21,7 +21,6 @@
             overflow: hidden; position: relative;
         }
 
-        /* Essential Scaling Container */
         #scalable-content {
             display: flex; flex-direction: column; height: 100%; transition: all 0.2s ease;
             transform-origin: top center;
@@ -35,10 +34,12 @@
         .logo-box { width: 90px; height: 90px; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        /* Vehicle & Client Info Grid */
-        .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; background: #fdfdfd; padding: 10px; border: 1px solid #eee; }
-        .detail-box label { font-size: 0.75em; font-weight: 800; color: var(--accent); text-transform: uppercase; display: block; }
-        .detail-box input { width: 100%; border: none; border-bottom: 1px solid #ddd; padding: 3px 0; font-size: 1.05em; outline: none; background: transparent; }
+        .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; background: #fdfdfd; padding: 10px; border: 1px solid #eee; }
+        .detail-box label { font-size: 0.75em; font-weight: 800; color: var(--accent); text-transform: uppercase; }
+        .detail-box input { width: 100%; border: none; border-bottom: 1px solid #ddd; padding: 2px 0; font-size: 1.05em; outline: none; background: transparent; }
+
+        /* Hide empty rows in PDF */
+        .pdf-mode .empty-data { display: none !important; }
 
         #table-area { flex-grow: 1; margin-bottom: 10px; }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
@@ -52,17 +53,18 @@
         .total-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 1.1em; }
         .grand-total { background: #f8f9fa; padding: 10px; border-left: 6px solid var(--accent); font-weight: 900; font-size: 1.5em; color: var(--primary); }
 
-        .footer { margin-top: auto; font-size: 0.75em; color: #777; text-align: center; padding-top: 10px; border-top: 1px solid #eee; }
+        .footer { margin-top: auto; font-size: 0.8em; color: #555; text-align: center; padding-top: 10px; border-top: 1px solid #eee; }
+        .warranty-input { border: none; border-bottom: 1px dashed #999; width: 40px; text-align: center; font-weight: bold; outline: none; }
+        
         .btn-remove { color: #e74c3c; cursor: pointer; border: none; background: none; font-weight: bold; font-size: 1.2em; }
-
         .pdf-mode .btn-remove, .pdf-mode .controls, .pdf-mode .logo-text { display: none !important; }
     </style>
 </head>
 <body>
 
     <div class="controls">
-        <button class="btn btn-add" onclick="addNewRow()">+ Add Part or Service (أضف بند)</button>
-        <button class="btn btn-download" onclick="generatePDF()">Download PDF (تحميل الفاتورة)</button>
+        <button class="btn btn-add" onclick="addNewRow()">+ Add Part or Service</button>
+        <button class="btn btn-download" onclick="generatePDF()">Download PDF</button>
     </div>
 
     <div id="invoice-wrapper">
@@ -74,28 +76,28 @@
                     <input type="text" class="editable-sub" value="Tel: 0565762783 | UAE" style="color: #1a73e8;">
                 </div>
                 <div class="logo-box" onclick="document.getElementById('fileInput').click()">
-                    <span class="logo-text" style="font-size: 10px; color: #999; text-align: center;">LOGO<br>شعار</span>
+                    <span class="logo-text" style="font-size: 10px; color: #999; text-align: center;">LOGO</span>
                     <img id="logo-preview" style="display:none;">
                     <input type="file" id="fileInput" hidden onchange="previewImage(this)">
                 </div>
             </div>
 
             <div class="details-grid">
-                <div class="detail-box">
+                <div class="detail-box" id="box-customer">
                     <label>Customer Name / اسم العميل</label>
-                    <input type="text" placeholder="Client Name" oninput="autoScale()">
-                </div>
-                <div class="detail-box" style="text-align: right;">
-                    <label>Invoice Date / التاريخ</label>
-                    <input type="text" id="currentDate" oninput="autoScale()">
+                    <input type="text" placeholder="Type name..." oninput="checkEmpty(this, 'box-customer')">
                 </div>
                 <div class="detail-box">
-                    <label>Vehicle No / رقم السيارة</label>
-                    <input type="text" placeholder="e.g. DUBAI 12345" oninput="autoScale()">
+                    <label>Date / التاريخ</label>
+                    <input type="text" id="currentDate">
                 </div>
-                <div class="detail-box" style="text-align: right;">
+                <div class="detail-box" id="box-vehicle">
+                    <label>Vehicle No / رقم السيارة</label>
+                    <input type="text" placeholder="Leave empty to hide" oninput="checkEmpty(this, 'box-vehicle')">
+                </div>
+                <div class="detail-box" id="box-model" style="text-align: right;">
                     <label>Model / الموديل</label>
-                    <input type="text" placeholder="e.g. JCB 3CX / Toyota Forklift" oninput="autoScale()">
+                    <input type="text" placeholder="Leave empty to hide" style="text-align: right;" oninput="checkEmpty(this, 'box-model')">
                 </div>
             </div>
 
@@ -104,14 +106,13 @@
                     <thead>
                         <tr>
                             <th style="width: 50%;">PART DESCRIPTION / JOB (الوصف)</th>
-                            <th style="width: 15%;">RATE (السعر)</th>
-                            <th style="width: 10%;">QTY (الكمية)</th>
-                            <th style="width: 20%; text-align: right;">AMOUNT (المبلغ)</th>
+                            <th style="width: 15%;">RATE</th>
+                            <th style="width: 10%;">QTY</th>
+                            <th style="width: 20%; text-align: right;">AMOUNT</th>
                             <th style="width: 5%;" class="btn-remove"></th>
                         </tr>
                     </thead>
-                    <tbody id="tableBody">
-                        </tbody>
+                    <tbody id="tableBody"></tbody>
                 </table>
             </div>
 
@@ -123,15 +124,31 @@
             </div>
 
             <div class="footer">
-                <p style="font-weight: bold; color: #444; margin-bottom: 5px;">THANK YOU FOR YOUR BUSINESS | شكرا لتعاملكم معنا</p>
+                <p style="font-weight: bold; margin-bottom: 5px;">THANK YOU FOR YOUR BUSINESS | شكرا لتعاملكم معنا</p>
+                <p>Warranty Period: <input type="text" class="warranty-input" value="06"> Months | فترة الضمان: <input type="text" class="warranty-input" value="06"> شهور</p>
                 <p>No Warranty on Electrical Parts | قطع الغيار الكهربائية لا تشمل الضمان</p>
-                <p>Goods once sold will not be returned or exchanged | البضاعة التي تباع لا ترد ولا تستبدل</p>
+                <p>Goods once sold will not be returned | البضاعة التي تباع لا ترد</p>
             </div>
         </div>
     </div>
 
     <script>
         document.getElementById('currentDate').value = new Date().toLocaleDateString('en-GB');
+
+        function checkEmpty(el, id) {
+            const parent = document.getElementById(id);
+            if (el.value.trim() === "") {
+                parent.classList.add('empty-data');
+            } else {
+                parent.classList.remove('empty-data');
+            }
+            autoScale();
+        }
+
+        // Initialize empty status
+        document.querySelectorAll('.detail-box input').forEach(input => {
+            if(input.placeholder.includes("hide")) input.parentElement.classList.add('empty-data');
+        });
 
         function previewImage(input) {
             if (input.files && input.files[0]) {
@@ -150,7 +167,7 @@
             const tbody = document.getElementById('tableBody');
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><input type="text" class="item-desc" placeholder="Enter part or labor charge..."></td>
+                <td><input type="text" class="item-desc" placeholder="Enter service..."></td>
                 <td><input type="number" class="item-num rate" value="0.00" oninput="updateCalculation()"></td>
                 <td><input type="number" class="item-num qty" value="1" oninput="updateCalculation()"></td>
                 <td style="text-align: right; font-weight: bold;"><span class="subtotal">0.00</span></td>
@@ -173,43 +190,33 @@
             autoScale();
         }
 
-        // --- SUPER AUTO-SCALE FUNCTION ---
         function autoScale() {
             const content = document.getElementById('scalable-content');
             const wrapper = document.getElementById('invoice-wrapper');
-            
-            // Start at normal size
             let scaleValue = 100;
             content.style.fontSize = '16px'; 
-
-            // Check if content height is more than wrapper height (minus some padding)
-            // If it's too big, shrink the font-size percentage
-            let safetyCounter = 0;
-            while (content.scrollHeight > wrapper.clientHeight - 40 && scaleValue > 35 && safetyCounter < 50) {
-                scaleValue -= 2;
+            let safety = 0;
+            while (content.scrollHeight > wrapper.clientHeight - 40 && scaleValue > 30 && safety < 60) {
+                scaleValue -= 1;
                 content.style.fontSize = scaleValue + '%';
-                safetyCounter++;
+                safety++;
             }
         }
 
         function generatePDF() {
             const element = document.getElementById('invoice-wrapper');
             document.body.classList.add('pdf-mode');
-            
             const opt = {
                 margin: 0,
-                filename: 'Kumara_Auto_Garage_Invoice.pdf',
+                filename: 'Kumara_Auto_Invoice.pdf',
                 image: { type: 'jpeg', quality: 1 },
                 html2canvas: { scale: 3, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
-
             html2pdf().from(element).set(opt).save().then(() => {
                 document.body.classList.remove('pdf-mode');
             });
         }
-
-        // Initialize with one row
         addNewRow();
     </script>
 </body>
