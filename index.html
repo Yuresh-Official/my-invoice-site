@@ -3,173 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Invoice Generator</title>
+    <title>Professional Auto Parts Invoice</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        body { font-family: 'Inter', 'Segoe UI', sans-serif; background-color: #f4f7fa; margin: 0; padding: 20px; color: #333; }
-        .no-print { max-width: 850px; margin: 0 auto 20px auto; }
-        .download-btn { width: 100%; background: #2563eb; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .download-btn:hover { background: #1d4ed8; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px; }
+        .no-print { max-width: 850px; margin: 0 auto 15px; }
+        .download-btn { width: 100%; background: #1a56db; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; }
+        
+        .invoice-wrapper { max-width: 850px; margin: auto; background: #fff; padding: 0; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.1); overflow: hidden; }
 
-        .invoice-wrapper { max-width: 850px; margin: auto; background: #fff; padding: 50px; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.05); min-height: 1000px; }
+        /* පින්තූරයේ ඇති ආකාරයට කළු පැහැති Header එක */
+        .black-header { background: #000; color: #fff; padding: 30px; text-align: center; position: relative; }
+        .company-name { font-size: 32px; font-weight: 900; margin: 0; letter-spacing: 1px; width: 100%; background: transparent; border: none; color: white; text-align: center; outline: none; }
+        .company-sub { font-size: 14px; margin: 10px 0; width: 100%; background: transparent; border: none; color: #ccc; text-align: center; outline: none; }
+        .company-tel { font-size: 18px; font-weight: bold; width: 100%; background: transparent; border: none; color: white; text-align: center; outline: none; }
+        .location-tag { position: absolute; right: 30px; bottom: 20px; font-size: 28px; font-weight: 800; background: transparent; border: none; color: white; width: 100px; text-align: right; outline: none; }
+
+        .content-area { padding: 40px; }
+        .info-row { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 20px; }
+        .info-input { border: none; outline: none; font-size: 16px; width: 45%; }
         
-        /* Header Layout */
-        .header-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px; }
-        .logo-box { width: 180px; height: 100px; border: 2px dashed #cbd5e1; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; background: #f8fafc; }
-        .logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
-        
-        .top-right { text-align: right; }
-        .invoice-label { font-size: 35px; font-weight: 800; color: #1e293b; margin: 0; }
-        
-        /* Billing Section */
-        .bill-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-bottom: 40px; }
-        .bill-label { font-weight: bold; color: #64748b; font-size: 13px; text-transform: uppercase; margin-bottom: 8px; display: block; }
-        textarea { width: 100%; border: 1px solid #e2e8f0; padding: 10px; border-radius: 5px; resize: none; font-size: 14px; outline: none; transition: 0.2s; }
-        textarea:focus { border-color: #3b82f6; background: #fbfcfe; }
-        
-        /* Table Style */
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { background: #1e293b; color: white; padding: 12px; text-align: left; font-size: 14px; }
-        td { border-bottom: 1px solid #f1f5f9; padding: 15px 10px; }
+        th { background: #000; color: white; padding: 12px; text-align: left; text-transform: uppercase; }
+        td { border-bottom: 1px solid #ddd; padding: 12px; }
         
-        /* Input Styles */
-        input { border: none; width: 100%; font-size: 14px; outline: none; background: transparent; padding: 5px; }
-        input:focus { background: #f1f5f9; border-radius: 4px; }
+        input.table-input { border: none; width: 100%; font-size: 14px; outline: none; background: transparent; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
 
-        /* --- ERROR එක නිවැරදි කිරීම: ඊතල ලකුණු (Spinners) ඉවත් කිරීම --- */
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type=number] { -moz-appearance: textfield; } /* Firefox සඳහා */
-
-        .add-row-btn { background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; margin-top: 20px; font-weight: bold; font-size: 13px; }
+        .add-btn { background: #10b981; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin-top: 15px; font-weight: bold; }
         
-        /* Footer Totals */
-        .totals-section { margin-top: 50px; display: flex; justify-content: flex-end; }
-        .total-box { width: 250px; }
-        .total-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 18px; border-top: 2px solid #1e293b; font-weight: bold; }
-
-        .footer-note { margin-top: 100px; border-top: 1px solid #f1f5f9; padding-top: 20px; font-size: 12px; color: #94a3b8; text-align: center; }
+        .totals { margin-top: 30px; text-align: right; border-top: 2px solid #000; padding-top: 15px; }
+        .total-text { font-size: 24px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="no-print">
-        <button class="download-btn" onclick="downloadInvoice()">DOWNLOAD PDF</button>
+        <button class="download-btn" onclick="downloadPDF()">DOWNLOAD INVOICE (PDF)</button>
     </div>
 
-    <div class="invoice-wrapper" id="invoice-content">
-        <div class="header-grid">
-            <div class="logo-box" onclick="document.getElementById('fileInput').click()">
-                <span id="logo-text" style="color:#94a3b8;">+ Add Your Logo</span>
-                <img id="logo-img" src="" style="display:none;">
-                <input type="file" id="fileInput" style="display:none;" onchange="loadLogo(event)">
-            </div>
-            <div class="top-right">
-                <h1 class="invoice-label">INVOICE</h1>
-                <input type="text" placeholder="# INV-001" style="text-align: right; font-size: 18px; font-weight: bold; color: #475569;">
-                <div style="margin-top:10px;">Date: <input type="date" id="inv-date" style="width: 135px; text-align: right; color: #64748b;"></div>
-            </div>
+    <div class="invoice-wrapper" id="invoice">
+        <div class="black-header">
+            <input type="text" class="company-name" value="ALLIJAN AUTO PARTS L.L.C - O.P.C">
+            <input type="text" class="company-sub" value="DEALS IN ALL KINDS OF FORKLIFTS, JCB & HEAVY EQUIPMENT SPARE PARTS">
+            <input type="text" class="company-tel" value="Tel : 0565762783">
+            <input type="text" class="location-tag" value="UAE">
         </div>
 
-        <div class="bill-grid">
-            <div>
-                <span class="bill-label">Who is this from?</span>
-                <textarea rows="3" placeholder="Business Name&#10;Address&#10;Phone"></textarea>
+        <div class="content-area">
+            <div class="info-row">
+                <span>M/s: <input type="text" class="info-input" placeholder="Customer Name" style="width: 300px;"></span>
+                <span>Date: <input type="text" id="date" class="info-input" style="width: 120px; text-align: right;"></span>
             </div>
-            <div>
-                <span class="bill-label">Bill To</span>
-                <textarea rows="3" placeholder="Customer Name / Details"></textarea>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th width="50%">Description</th>
+                        <th width="15%">Rate</th>
+                        <th width="15%">Qty</th>
+                        <th width="20%">Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="item-body">
+                    <tr>
+                        <td><input type="text" class="table-input" placeholder="Item details..."></td>
+                        <td><input type="number" class="table-input rate" placeholder="0.00" oninput="calc()"></td>
+                        <td><input type="number" class="table-input qty" placeholder="1" oninput="calc()"></td>
+                        <td style="text-align: right; font-weight: bold;"><span class="row-total">0.00</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <button class="add-btn no-print" onclick="addRow()">+ Add Item</button>
+
+            <div class="totals">
+                <span class="total-text">Total: <span id="grand-total">0.00</span></span>
             </div>
-        </div>
-
-        <table id="item-table">
-            <thead>
-                <tr>
-                    <th width="50%">Description</th>
-                    <th width="15%">Rate (Rs.)</th>
-                    <th width="15%">Qty</th>
-                    <th width="20%">Amount</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><input type="text" placeholder="Description of item/service..."></td>
-                    <td><input type="number" class="rate" placeholder="0.00" oninput="calculate()"></td>
-                    <td><input type="number" class="qty" placeholder="1" oninput="calculate()"></td>
-                    <td style="font-weight: bold; text-align: right;"><span class="row-total">0.00</span></td>
-                </tr>
-            </tbody>
-        </table>
-
-        <button class="add-row-btn no-print" onclick="addRow()">+ Add Line Item</button>
-
-        <div class="totals-section">
-            <div class="total-box">
-                <div class="total-row">
-                    <span>Total:</span>
-                    <span id="grand-total">0.00</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="footer-note">
-            Thank you for your business!
         </div>
     </div>
 
     <script>
-        // වර්තමාන දිනය සැකසීම
-        document.getElementById('inv-date').valueAsDate = new Date();
+        document.getElementById('date').value = new Date().toLocaleDateString();
 
-        // අලුත් පේළියක් එකතු කිරීම
         function addRow() {
-            let table = document.getElementById("item-table").getElementsByTagName('tbody')[0];
-            let row = table.insertRow();
+            let row = document.getElementById('item-body').insertRow();
             row.innerHTML = `
-                <td><input type="text" placeholder="Description of item/service..."></td>
-                <td><input type="number" class="rate" placeholder="0.00" oninput="calculate()"></td>
-                <td><input type="number" class="qty" placeholder="1" oninput="calculate()"></td>
-                <td style="font-weight: bold; text-align: right;"><span class="row-total">0.00</span></td>
+                <td><input type="text" class="table-input" placeholder="Item details..."></td>
+                <td><input type="number" class="table-input rate" placeholder="0.00" oninput="calc()"></td>
+                <td><input type="number" class="table-input qty" placeholder="1" oninput="calc()"></td>
+                <td style="text-align: right; font-weight: bold;"><span class="row-total">0.00</span></td>
             `;
         }
 
-        // ගණනය කිරීම් සිදුකිරීම
-        function calculate() {
-            let rates = document.getElementsByClassName("rate");
-            let qtys = document.getElementsByClassName("qty");
-            let rowTotals = document.getElementsByClassName("row-total");
-            let grandTotal = 0;
-
-            for (let i = 0; i < rates.length; i++) {
-                let r = parseFloat(rates[i].value) || 0;
-                let q = parseFloat(qtys[i].value) || 0;
-                let amount = r * q;
-                rowTotals[i].innerText = amount.toFixed(2);
-                grandTotal += amount;
+        function calc() {
+            let rates = document.getElementsByClassName('rate');
+            let qtys = document.getElementsByClassName('qty');
+            let sums = document.getElementsByClassName('row-total');
+            let total = 0;
+            for(let i=0; i<rates.length; i++) {
+                let s = (parseFloat(rates[i].value) || 0) * (parseFloat(qtys[i].value) || 0);
+                sums[i].innerText = s.toFixed(2);
+                total += s;
             }
-            document.getElementById("grand-total").innerText = grandTotal.toLocaleString('en-US', {minimumFractionDigits: 2});
+            document.getElementById('grand-total').innerText = total.toLocaleString(undefined, {minimumFractionDigits: 2});
         }
 
-        // Logo එක ඇතුළත් කිරීම
-        function loadLogo(event) {
-            let img = document.getElementById('logo-img');
-            let text = document.getElementById('logo-text');
-            img.src = URL.createObjectURL(event.target.files[0]);
-            img.style.display = "block";
-            text.style.display = "none";
-        }
-
-        // PDF එක ඩවුන්ලෝඩ් කිරීම
-        function downloadInvoice() {
-            const element = document.getElementById('invoice-content');
-            const opt = {
-                margin: [0.5, 0.5],
+        function downloadPDF() {
+            const element = document.getElementById('invoice');
+            html2pdf().from(element).set({
+                margin: 0,
                 filename: 'Invoice.pdf',
-                image: { type: 'jpeg', quality: 1 },
-                html2canvas: { scale: 3, useCORS: true },
+                html2canvas: { scale: 2 },
                 jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
-            html2pdf().set(opt).from(element).save();
+            }).save();
         }
     </script>
 </body>
