@@ -3,66 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yuresh Invoice Generator</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <title>Professional Invoice Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .invoice-box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        h2 { text-align: center; color: #1a73e8; margin-bottom: 20px; }
-        label { display: block; margin-top: 10px; font-weight: bold; color: #555; }
-        input { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
-        button { width: 100%; padding: 15px; background-color: #1a73e8; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 25px; transition: background 0.3s; }
-        button:hover { background-color: #1557b0; }
+        body { font-family: sans-serif; background-color: #f8f9fa; padding: 20px; }
+        .form-area { max-width: 500px; margin: 0 auto 30px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #007bff; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 14px; background-color: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 10px; }
+        button:hover { background-color: #218838; }
+
+        /* ඉන්වොයිසියේ පෙනුම */
+        #invoice-layout { background: white; width: 210mm; padding: 20mm; margin: auto; border: 1px solid #ddd; display: block; }
+        .inv-header { border-bottom: 3px solid #333; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; }
+        .inv-title { font-size: 32px; font-weight: bold; color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+        th { background-color: #333; color: white; padding: 12px; text-align: left; }
+        td { border-bottom: 1px solid #eee; padding: 12px; }
+        .total-section { text-align: right; margin-top: 30px; font-size: 22px; font-weight: bold; color: #d9534f; }
     </style>
 </head>
 <body>
 
-<div class="invoice-box">
-    <h2>ඉන්වොයිස් ජෙනරේටර්</h2>
-    
-    <label>පාරිභෝගිකයාගේ නම:</label>
-    <input type="text" id="name" placeholder="නම ඇතුළත් කරන්න">
-
-    <label>භාණ්ඩයේ විස්තරය:</label>
+<div class="form-area">
+    <h2>විස්තර ඇතුළත් කරන්න</h2>
+    <input type="text" id="shop" placeholder="ව්‍යාපාරයේ නම (Shop Name)">
+    <input type="text" id="customer" placeholder="පාරිභෝගිකයාගේ නම">
     <input type="text" id="item" placeholder="භාණ්ඩයේ නම">
+    <input type="number" id="price" placeholder="මිල (රුපියල්)">
+    <input type="number" id="qty" placeholder="ප්‍රමාණය">
+    <button onclick="makePDF()">ඉන්වොයිසිය සාදා PDF ලබාගන්න</button>
+</div>
 
-    <label>මිල (රුපියල්):</label>
-    <input type="number" id="price" placeholder="0.00">
+<div id="invoice-layout">
+    <div class="inv-header">
+        <div>
+            <div class="inv-title">INVOICE</div>
+            <h3 id="show-shop"></h3>
+        </div>
+        <div style="text-align: right;">
+            <p>දිනය: <span id="show-date"></span></p>
+        </div>
+    </div>
 
-    <label>ප්‍රමාණය:</label>
-    <input type="number" id="qty" placeholder="1">
+    <div>
+        <strong>ගෙවිය යුතු පාර්ශවය:</strong>
+        <p id="show-cust"></p>
+    </div>
 
-    <button onclick="generatePDF()">PDF එකක් ලබාගන්න</button>
+    <table>
+        <thead>
+            <tr>
+                <th>විස්තරය</th>
+                <th>මිල (රු.)</th>
+                <th>ප්‍රමාණය</th>
+                <th>එකතුව</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td id="show-item"></td>
+                <td id="show-price"></td>
+                <td id="show-qty"></td>
+                <td id="show-total"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="total-section">
+        මුළු මුදල: රු. <span id="show-grand"></span>
+    </div>
 </div>
 
 <script>
-    function generatePDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
+    function makePDF() {
+        // අගයන් ලබා ගැනීම
+        const shopVal = document.getElementById('shop').value;
+        const custVal = document.getElementById('customer').value;
+        const itemVal = document.getElementById('item').value;
+        const priceVal = parseFloat(document.getElementById('price').value) || 0;
+        const qtyVal = parseInt(document.getElementById('qty').value) || 1;
+        const totalVal = priceVal * qtyVal;
+        const dateVal = new Date().toLocaleDateString();
 
-        const name = document.getElementById('name').value;
-        const item = document.getElementById('item').value;
-        const price = document.getElementById('price').value;
-        const qty = document.getElementById('qty').value;
-        const total = price * qty;
+        // ඉන්වොයිසියට දත්ත ඇතුළත් කිරීම
+        document.getElementById('show-shop').innerText = shopVal;
+        document.getElementById('show-cust').innerText = custVal;
+        document.getElementById('show-item').innerText = itemVal;
+        document.getElementById('show-price').innerText = priceVal.toFixed(2);
+        document.getElementById('show-qty').innerText = qtyVal;
+        document.getElementById('show-total').innerText = totalVal.toFixed(2);
+        document.getElementById('show-grand').innerText = totalVal.toFixed(2);
+        document.getElementById('show-date').innerText = dateVal;
 
-        // PDF එකේ අන්තර්ගතය සැකසීම
-        doc.setFontSize(22);
-        doc.text("INVOICE", 105, 20, { align: 'center' });
+        // PDF එක සෑදීම
+        const element = document.getElementById('invoice-layout');
+        const options = {
+            margin: 0.5,
+            filename: custVal + '_Invoice.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
         
-        doc.setFontSize(12);
-        doc.text("පාරිභෝගිකයා: " + name, 20, 40);
-        doc.text("------------------------------------------", 20, 45);
-        doc.text("භාණ්ඩය: " + item, 20, 55);
-        doc.text("ඒකක මිල: රු. " + price, 20, 65);
-        doc.text("ප්‍රමාණය: " + qty, 20, 75);
-        doc.text("------------------------------------------", 20, 80);
-        
-        doc.setFontSize(14);
-        doc.text("මුළු එකතුව: රු. " + total + ".00", 20, 95);
-
-        // PDF එක සේව් කිරීම
-        doc.save(name + "_invoice.pdf");
+        html2pdf().set(options).from(element).save();
     }
 </script>
 
