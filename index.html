@@ -6,18 +6,33 @@
     <title>Professional Auto Parts Invoice</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px; }
-        .no-print { max-width: 850px; margin: 0 auto 15px; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f3f4f6; margin: 0; padding: 0; }
+        
+        /* බටන් එක වෙබ් අඩවියේදී පමණක් පෙනේ */
+        .no-print { max-width: 800px; margin: 20px auto; padding: 0 10px; }
         .download-btn { width: 100%; background: #1a56db; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; }
         
-        .invoice-wrapper { max-width: 850px; margin: auto; background: #fff; padding: 0; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.1); overflow: hidden; }
+        /* ඉන්වොයිසියේ ප්‍රධාන රාමුව */
+        .invoice-wrapper { 
+            width: 800px; /* දිග ස්ථිර කළා */
+            margin: auto; 
+            background: #fff; 
+            min-height: 1000px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1); 
+        }
 
-        /* Header එක පේළි දෙකකට කැඩීම වැළැක්වීමට කළ වෙනස්කම් */
-        .black-header { background: #000; color: #fff; padding: 25px 15px; text-align: center; position: relative; }
+        /* Header එක පසෙකට පැනීම වැළැක්වීමට කළ වෙනස්කම් */
+        .black-header { 
+            background: #000; 
+            color: #fff; 
+            padding: 40px 20px; 
+            text-align: center; 
+            position: relative;
+            box-sizing: border-box; /* දිග නිවැරදිව පවත්වා ගැනීමට */
+        }
         
-        /* අකුරු වල ප්‍රමාණය සහ පරතරය සකස් කිරීම */
         .company-name { 
-            font-size: 26px; /* PDF එකේදී අකුරු කැඩීම වැළැක්වීමට ප්‍රමාණය අඩු කළා */
+            font-size: 28px; 
             font-weight: 800; 
             margin: 0; 
             width: 100%; 
@@ -29,34 +44,34 @@
             text-transform: uppercase;
         }
         
-        .company-sub { font-size: 12px; margin: 5px 0; width: 100%; background: transparent; border: none; color: #bbb; text-align: center; outline: none; }
+        .company-sub { font-size: 12px; margin: 8px 0; width: 100%; background: transparent; border: none; color: #bbb; text-align: center; outline: none; }
         .company-tel { font-size: 16px; font-weight: bold; width: 100%; background: transparent; border: none; color: white; text-align: center; outline: none; }
         
-        /* UAE යන වචනය පසෙකින් ලස්සනට පෙනීමට */
-        .location-tag { position: absolute; right: 20px; bottom: 15px; font-size: 22px; font-weight: 800; background: transparent; border: none; color: white; width: 80px; text-align: right; outline: none; }
+        .location-tag { position: absolute; right: 30px; bottom: 20px; font-size: 24px; font-weight: 800; background: transparent; border: none; color: white; width: 80px; text-align: right; outline: none; }
 
-        .content-area { padding: 30px; }
-        .info-row { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 20px; }
-        .info-input { border: none; outline: none; font-size: 15px; width: 45%; background: transparent; }
+        /* විස්තර ඇතුළත් කරන ප්‍රදේශය */
+        .content-area { padding: 40px; box-sizing: border-box; }
+        .info-row { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 30px; }
+        .info-input { border: none; outline: none; font-size: 16px; background: transparent; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { background: #000; color: white; padding: 10px; text-align: left; font-size: 13px; }
-        td { border-bottom: 1px solid #eee; padding: 10px; }
+        th { background: #000; color: white; padding: 12px; text-align: left; font-size: 14px; text-transform: uppercase; }
+        td { border-bottom: 1px solid #eee; padding: 12px; }
         
         input.table-input { border: none; width: 100%; font-size: 14px; outline: none; background: transparent; }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
 
-        .add-btn { background: #10b981; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin-top: 15px; font-weight: bold; }
+        .add-btn { background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 20px; font-weight: bold; }
         
-        .totals { margin-top: 25px; text-align: right; border-top: 2px solid #000; padding-top: 10px; }
-        .total-text { font-size: 22px; font-weight: bold; }
+        .totals { margin-top: 40px; text-align: right; border-top: 2px solid #000; padding-top: 15px; }
+        .total-text { font-size: 24px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="no-print">
-        <button class="download-btn" onclick="downloadPDF()">DOWNLOAD INVOICE (PDF)</button>
+        <button class="download-btn" onclick="downloadPDF()">DOWNLOAD PDF INVOICE</button>
     </div>
 
     <div class="invoice-wrapper" id="invoice">
@@ -69,22 +84,22 @@
 
         <div class="content-area">
             <div class="info-row">
-                <span>M/s: <input type="text" class="info-input" placeholder="Customer Name" style="width: 250px;"></span>
-                <span>Date: <input type="text" id="date" class="info-input" style="width: 100px; text-align: right;"></span>
+                <span>M/s: <input type="text" class="info-input" placeholder="Customer Name" style="width: 300px;"></span>
+                <span>Date: <input type="text" id="date" class="info-input" style="width: 120px; text-align: right;"></span>
             </div>
 
             <table>
                 <thead>
                     <tr>
-                        <th width="55%">Description</th>
+                        <th width="50%">Description</th>
                         <th width="15%">Rate</th>
-                        <th width="10%">Qty</th>
+                        <th width="15%">Qty</th>
                         <th width="20%" style="text-align: right;">Amount</th>
                     </tr>
                 </thead>
                 <tbody id="item-body">
                     <tr>
-                        <td><input type="text" class="table-input" placeholder="Item details..."></td>
+                        <td><input type="text" class="table-input" placeholder="Item/Service description..."></td>
                         <td><input type="number" class="table-input rate" placeholder="0.00" oninput="calc()"></td>
                         <td><input type="number" class="table-input qty" placeholder="1" oninput="calc()"></td>
                         <td style="text-align: right; font-weight: bold;"><span class="row-total">0.00</span></td>
@@ -92,7 +107,7 @@
                 </tbody>
             </table>
 
-            <button class="add-btn no-print" onclick="addRow()">+ Add Item</button>
+            <button class="add-btn no-print" onclick="addRow()">+ Add New Item</button>
 
             <div class="totals">
                 <span class="total-text">Total Amount: <span id="grand-total">0.00</span></span>
@@ -106,7 +121,7 @@
         function addRow() {
             let row = document.getElementById('item-body').insertRow();
             row.innerHTML = `
-                <td><input type="text" class="table-input" placeholder="Item details..."></td>
+                <td><input type="text" class="table-input" placeholder="Item/Service description..."></td>
                 <td><input type="number" class="table-input rate" placeholder="0.00" oninput="calc()"></td>
                 <td><input type="number" class="table-input qty" placeholder="1" oninput="calc()"></td>
                 <td style="text-align: right; font-weight: bold;"><span class="row-total">0.00</span></td>
@@ -128,13 +143,15 @@
 
         function downloadPDF() {
             const element = document.getElementById('invoice');
-            // PDF එකේ කොලිටිය සහ පැහැදිලි බව වැඩි කිරීමට scale එක 3 දක්වා වැඩි කළා
-            html2pdf().from(element).set({
+            // PDF එක නිවැරදිව පේජ් එක මැදට එන ලෙස මාජින් සකස් කළා
+            const opt = {
                 margin: 0,
                 filename: 'Invoice.pdf',
-                html2canvas: { scale: 3, useCORS: true },
+                image: { type: 'jpeg', quality: 1 },
+                html2canvas: { scale: 3, useCORS: true, letterRendering: true },
                 jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-            }).save();
+            };
+            html2pdf().from(element).set(opt).save();
         }
     </script>
 </body>
