@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Auto Parts Invoice</title>
+    <title>Professional Auto Parts Invoice with Logo</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root { --invoice-width: 794px; --invoice-height: 1123px; }
@@ -30,13 +30,33 @@
         .preview-content { transform: scale(0.37); transform-origin: top left; pointer-events: none; }
 
         .top-stripe { background: #000; height: 12px; width: 100%; }
-        .header { padding: 40px; display: flex; justify-content: space-between; }
+        .header { padding: 40px; display: flex; justify-content: space-between; align-items: flex-start; }
         .company-info h1 { font-size: 26px; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
         .company-info p { font-size: 11px; color: #444; font-weight: 600; line-height: 1.4; }
-        .inv-text { font-size: 40px; font-weight: 900; color: #f0f0f0; }
+        
+        /* Logo එක තබන ස්ථානය (ඔබ පෙන්වූ කොටුව) */
+        .logo-container {
+            width: 180px;
+            height: 100px;
+            border: 2px dashed #ddd; /* වෙබ් එකේදී පමණක් පෙනෙන මායිමක් */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+        }
+        .logo-container:hover { border-color: #aaa; background-color: #f9f9f9; }
+        .logo-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* පින්තූරයේ හැඩය ආරක්ෂා කරයි */
+            display: none; /* මුලින් සඟවා ඇත */
+        }
+        .logo-placeholder { font-size: 12px; color: #aaa; font-weight: bold; text-align: center; }
 
         .client-info { padding: 0 40px; margin-bottom: 30px; display: flex; justify-content: space-between; font-size: 14px; }
-        .input-line { border: none; border-bottom: 1px solid #ddd; outline: none; padding: 2px; font-weight: bold; width: 220px; }
+        .input-line { border: none; border-bottom: 1px solid #ddd; outline: none; padding: 2px; font-weight: bold; width: 220px; background: transparent; }
 
         .items-table { width: 100%; border-collapse: collapse; }
         
@@ -62,7 +82,6 @@
         
         .item-input { border: none; width: 100%; outline: none; font-size: 14px; background: transparent; }
         
-        /* Input කොටු ඉවත් කිරීම සඳහා */
         .num-input { 
             width: 80px; 
             padding: 6px; 
@@ -74,18 +93,11 @@
             background: transparent;
         }
 
-        /* PDF එකේදී Input border එක නැති කිරීමට */
-        .pdf-mode .num-input {
-            border: none !important;
-            font-weight: 600;
-        }
-
         .no-print { display: block; } 
 
         .add-row { margin: 20px 40px; background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
         .add-row:hover { background: #218838; }
 
-        /* Grand Total නව පෙනුම */
         .footer { margin-top: 40px; padding: 0 40px 60px; display: flex; justify-content: flex-end; }
         .total-container { 
             border-top: 2px solid #000;
@@ -97,6 +109,15 @@
         }
         .total-label { font-size: 14px; font-weight: 700; color: #555; }
         .total-amount { font-size: 24px; font-weight: 800; color: #000; }
+
+        /* PDF එකට බලපාන විශේෂ නීති */
+        @media print {
+            .logo-container { border: none !important; } /* PDF එකේදී Logo එකේ කඩ ඉර (dashed border) ඉවත් කරයි */
+            .logo-placeholder { display: none !important; }
+        }
+        .pdf-mode .logo-container { border: none !important; }
+        .pdf-mode .logo-placeholder { display: none !important; }
+        .pdf-mode .num-input { border: none !important; font-weight: 600; }
 
     </style>
 </head>
@@ -115,7 +136,12 @@
                     <p>DEALS IN ALL KINDS OF FORKLIFTS, JCB & HEAVY EQUIPMENT SPARE PARTS</p>
                     <p>Tel: 0565762783 | UAE</p>
                 </div>
-                <div class="inv-text">INVOICE</div>
+                
+                <div class="logo-container" onclick="document.getElementById('logo-input').click()">
+                    <span class="logo-placeholder" id="placeholder-text">+ Add Your Logo<br>(PNG recommended)</span>
+                    <img id="logo-img" src="" alt="Company Logo">
+                    <input type="file" id="logo-input" accept="image/png, image/jpeg" style="display: none;" onchange="loadLogo(event)">
+                </div>
             </div>
 
             <div class="client-info">
@@ -161,6 +187,24 @@
     <script>
         document.getElementById('cur-date').value = new Date().toLocaleDateString();
 
+        // Logo එක පූරණය කිරීමේ function එක
+        function loadLogo(event) {
+            const image = document.getElementById('logo-img');
+            const placeholder = document.getElementById('placeholder-text');
+            const file = event.target.files[0];
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    image.src = e.target.result;
+                    image.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    syncPreview(); // Preview එකත් update කරන්න
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
         function addNewRow() {
             const body = document.getElementById('table-body');
             const row = body.insertRow();
@@ -189,8 +233,19 @@
         }
 
         function syncPreview() {
-            const clone = document.getElementById('invoice-wrapper').innerHTML;
-            document.getElementById('preview-display').innerHTML = clone;
+            // පින්තූරය ඇතුළු සියලුම දේ Preview එකට කොපි කිරීම
+            const wrapper = document.getElementById('invoice-wrapper');
+            const clone = wrapper.cloneNode(true);
+            
+            // Preview එකේදී input fields වල අගයන් නිවැරදිව පෙන්වීමට
+            const originalInputs = wrapper.querySelectorAll('input');
+            const clonedInputs = clone.querySelectorAll('input');
+            originalInputs.forEach((input, index) => {
+                clonedInputs[index].value = input.value;
+            });
+
+            document.getElementById('preview-display').innerHTML = '';
+            document.getElementById('preview-display').appendChild(clone);
         }
 
         syncPreview();
@@ -198,23 +253,29 @@
         function generatePDF() {
             const element = document.getElementById('invoice-wrapper');
             
-            // PDF සඳහා විශේෂ සැකසුම් (borders අයින් කිරීම සහ button සැඟවීම)
             element.classList.add('pdf-mode');
             const noPrintElements = element.querySelectorAll('.no-print');
             noPrintElements.forEach(el => el.style.display = 'none');
+
+            // Logo එකක් නැත්නම් ඒ කොටුව සම්පූර්ණයෙන්ම සඟවන්න (හිස් අවකාශය ඉතිරි නොකිරීමට)
+            const logoImg = document.getElementById('logo-img');
+            const logoContainer = element.querySelector('.logo-container');
+            if (logoImg.style.display === 'none' || !logoImg.src) {
+                logoContainer.style.display = 'none';
+            }
 
             const opt = {
                 margin: 0,
                 filename: 'Kumara_Auto_Invoice.pdf',
                 image: { type: 'jpeg', quality: 1 },
-                html2canvas: { scale: 3, useCORS: true, width: 794 }, // Quality එක වැඩි කළා
+                html2canvas: { scale: 3, useCORS: true, width: 794 }, // Resolution එක වැඩි කළා
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
             html2pdf().from(element).set(opt).save().then(() => {
-                // PDF එක හැදුණු පසු නැවත සාමාන්‍ය තත්ත්වයට පත් කිරීම
                 element.classList.remove('pdf-mode');
                 noPrintElements.forEach(el => el.style.display = 'block');
+                logoContainer.style.display = 'flex'; // නැවත පෙන්වන්න
             });
         }
     </script>
