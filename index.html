@@ -3,16 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Auto Parts Invoice with Logo</title>
+    <title>Premium Auto Parts Invoice</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        :root { --invoice-width: 794px; --invoice-height: 1123px; }
+        :root { 
+            --invoice-width: 794px; 
+            --invoice-height: 1123px; 
+            --primary-color: #1a73e8; 
+            --secondary-color: #f8f9fa;
+        }
         
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        body { font-family: 'Segoe UI', Roboto, Arial, sans-serif; background-color: #e9ecef; display: flex; flex-direction: column; align-items: center; padding: 20px; }
 
         .no-print-area { width: 100%; max-width: 900px; margin-bottom: 20px; }
-        .download-btn { width: 100%; background: #1a73e8; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; }
+        .download-btn { width: 100%; background: var(--primary-color); color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; transition: 0.3s; }
+        .download-btn:hover { background: #1557b0; box-shadow: 0 4px 12px rgba(26, 115, 232, 0.4); }
 
         .main-container { display: flex; gap: 20px; width: 100%; max-width: 1250px; justify-content: center; }
 
@@ -21,110 +27,94 @@
             width: var(--invoice-width); 
             min-height: var(--invoice-height); 
             padding: 0; 
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             overflow: hidden;
             position: relative;
         }
 
-        .preview-box { width: 300px; height: 424px; border: 2px solid #ccc; border-radius: 8px; position: sticky; top: 20px; background: #fff; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .preview-content { transform: scale(0.37); transform-origin: top left; pointer-events: none; }
+        .preview-box { width: 320px; height: 450px; border: 2px solid #ced4da; border-radius: 12px; position: sticky; top: 20px; background: #fff; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .preview-content { transform: scale(0.4); transform-origin: top left; pointer-events: none; }
 
-        .top-stripe { background: #000; height: 12px; width: 100%; }
-        .header { padding: 40px; display: flex; justify-content: space-between; align-items: flex-start; }
-        .company-info h1 { font-size: 26px; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
-        .company-info p { font-size: 11px; color: #444; font-weight: 600; line-height: 1.4; }
+        .top-stripe { background: var(--primary-color); height: 15px; width: 100%; }
         
-        /* Logo එක තබන ස්ථානය (ඔබ පෙන්වූ කොටුව) */
+        .header { padding: 40px; display: flex; justify-content: space-between; align-items: center; background: var(--secondary-color); border-bottom: 1px solid #dee2e6; }
+        .company-info h1 { font-size: 28px; font-weight: 800; color: #202124; text-transform: uppercase; margin-bottom: 5px; }
+        .company-info p { font-size: 12px; color: #5f6368; font-weight: 600; line-height: 1.5; }
+        
+        /* 1:1 Logo Style */
         .logo-container {
-            width: 180px;
+            width: 100px;
             height: 100px;
-            border: 2px dashed #ddd; /* වෙබ් එකේදී පමණක් පෙනෙන මායිමක් */
+            border: 2px dashed #1a73e8;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             overflow: hidden;
-            position: relative;
+            background: #fff;
+            transition: 0.2s;
         }
-        .logo-container:hover { border-color: #aaa; background-color: #f9f9f9; }
+        .logo-container:hover { border-color: #1557b0; background: #f1f3f4; }
         .logo-container img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain; /* පින්තූරයේ හැඩය ආරක්ෂා කරයි */
-            display: none; /* මුලින් සඟවා ඇත */
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* පින්තූරය කොටුවට සරිලන සේ කැපී පෙනේ */
+            display: none;
         }
-        .logo-placeholder { font-size: 12px; color: #aaa; font-weight: bold; text-align: center; }
+        .logo-placeholder { font-size: 11px; color: var(--primary-color); font-weight: bold; text-align: center; padding: 5px; }
 
-        .client-info { padding: 0 40px; margin-bottom: 30px; display: flex; justify-content: space-between; font-size: 14px; }
-        .input-line { border: none; border-bottom: 1px solid #ddd; outline: none; padding: 2px; font-weight: bold; width: 220px; background: transparent; }
+        .client-info { padding: 40px; display: flex; justify-content: space-between; font-size: 14px; background: #fff; }
+        .input-line { border: none; border-bottom: 2px solid #eee; outline: none; padding: 5px 0; font-weight: 700; width: 250px; font-size: 15px; transition: 0.3s; }
+        .input-line:focus { border-bottom-color: var(--primary-color); }
 
-        .items-table { width: 100%; border-collapse: collapse; }
-        
+        .items-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         .items-table th { 
-            background: #f9f9f9; 
-            border-top: 2px solid #000; 
-            border-bottom: 2px solid #000; 
-            padding: 12px 10px; 
-            font-size: 12px; 
-            text-align: center; 
+            background: #202124; 
+            color: #fff;
+            padding: 15px 10px; 
+            font-size: 13px; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         .items-table th:first-child { text-align: left; padding-left: 40px; } 
         .items-table th:last-child { text-align: right; padding-right: 40px; } 
 
-        .items-table td { 
-            padding: 10px; 
-            border-bottom: 1px solid #eee; 
-            text-align: center; 
-            vertical-align: middle;
-        }
+        .items-table td { padding: 15px 10px; border-bottom: 1px solid #f1f3f4; text-align: center; }
         .items-table td:first-child { text-align: left; padding-left: 40px; }
-        .items-table td:last-child { text-align: right; padding-right: 40px; }
+        .items-table td:last-child { text-align: right; padding-right: 40px; font-weight: 700; color: #202124; }
         
-        .item-input { border: none; width: 100%; outline: none; font-size: 14px; background: transparent; }
-        
-        .num-input { 
-            width: 80px; 
-            padding: 6px; 
-            border: 1px solid #e0e0e0; 
-            border-radius: 4px; 
-            text-align: center; 
-            font-size: 14px;
-            outline: none;
-            background: transparent;
-        }
+        .item-input { border: none; width: 100%; outline: none; font-size: 14px; font-weight: 500; background: transparent; }
+        .num-input { width: 85px; padding: 8px; border: 1px solid #dadce0; border-radius: 6px; text-align: center; font-size: 14px; outline: none; }
 
-        .no-print { display: block; } 
+        .add-row { margin: 25px 40px; background: #34a853; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .add-row:hover { background: #2d8a46; transform: translateY(-1px); }
 
-        .add-row { margin: 20px 40px; background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .add-row:hover { background: #218838; }
-
-        .footer { margin-top: 40px; padding: 0 40px 60px; display: flex; justify-content: flex-end; }
+        .footer { margin-top: 50px; padding: 0 40px 60px; display: flex; justify-content: flex-end; }
         .total-container { 
-            border-top: 2px solid #000;
-            padding-top: 15px;
-            width: 250px;
+            background: var(--secondary-color);
+            border-left: 5px solid var(--primary-color);
+            padding: 20px 30px;
+            width: 300px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            align-items: flex-end;
+            border-radius: 4px;
         }
-        .total-label { font-size: 14px; font-weight: 700; color: #555; }
-        .total-amount { font-size: 24px; font-weight: 800; color: #000; }
+        .total-label { font-size: 13px; font-weight: 700; color: #5f6368; margin-bottom: 5px; }
+        .total-amount { font-size: 28px; font-weight: 900; color: var(--primary-color); }
 
-        /* PDF එකට බලපාන විශේෂ නීති */
-        @media print {
-            .logo-container { border: none !important; } /* PDF එකේදී Logo එකේ කඩ ඉර (dashed border) ඉවත් කරයි */
-            .logo-placeholder { display: none !important; }
-        }
+        /* PDF Cleanup */
         .pdf-mode .logo-container { border: none !important; }
-        .pdf-mode .logo-placeholder { display: none !important; }
-        .pdf-mode .num-input { border: none !important; font-weight: 600; }
+        .pdf-mode .logo-placeholder, .pdf-mode .add-row { display: none !important; }
+        .pdf-mode .num-input { border: none !important; appearance: none; -moz-appearance: textfield; }
 
     </style>
 </head>
 <body>
 
     <div class="no-print-area">
-        <button class="download-btn" onclick="generatePDF()">DOWNLOAD PDF INVOICE</button>
+        <button class="download-btn" onclick="generatePDF()">DOWNLOAD HIGH-QUALITY PDF</button>
     </div>
 
     <div class="main-container">
@@ -138,15 +128,21 @@
                 </div>
                 
                 <div class="logo-container" onclick="document.getElementById('logo-input').click()">
-                    <span class="logo-placeholder" id="placeholder-text">+ Add Your Logo<br>(PNG recommended)</span>
-                    <img id="logo-img" src="" alt="Company Logo">
-                    <input type="file" id="logo-input" accept="image/png, image/jpeg" style="display: none;" onchange="loadLogo(event)">
+                    <span class="logo-placeholder" id="placeholder-text">Click to Add<br>Square Logo<br>(1:1)</span>
+                    <img id="logo-img" src="" alt="Logo">
+                    <input type="file" id="logo-input" accept="image/*" style="display: none;" onchange="loadLogo(event)">
                 </div>
             </div>
 
             <div class="client-info">
-                <div>M/s: <input type="text" class="input-line" placeholder="Enter Customer Name"></div>
-                <div>Date: <input type="text" id="cur-date" class="input-line" style="width: 100px; text-align: right;"></div>
+                <div>
+                    <label style="display:block; font-size:11px; color:#1a73e8; font-weight:800;">BILL TO</label>
+                    <input type="text" class="input-line" placeholder="Customer Name">
+                </div>
+                <div style="text-align: right;">
+                    <label style="display:block; font-size:11px; color:#5f6368; font-weight:800;">DATE</label>
+                    <input type="text" id="cur-date" class="input-line" style="width: 120px; text-align: right;">
+                </div>
             </div>
 
             <table class="items-table">
@@ -160,26 +156,26 @@
                 </thead>
                 <tbody id="table-body">
                     <tr>
-                        <td><input type="text" class="item-input" placeholder="Item description..."></td>
-                        <td><input type="number" class="num-input rate" value="0" oninput="calculate()"></td>
+                        <td><input type="text" class="item-input" placeholder="Enter item details..."></td>
+                        <td><input type="number" class="num-input rate" value="0.00" oninput="calculate()"></td>
                         <td><input type="number" class="num-input qty" value="0" oninput="calculate()"></td>
-                        <td style="font-weight: bold;"><span class="subtotal">0.00</span></td>
+                        <td><span class="subtotal">0.00</span></td>
                     </tr>
                 </tbody>
             </table>
             
-            <button class="add-row no-print" onclick="addNewRow()">+ Add Item</button>
+            <button class="add-row no-print" onclick="addNewRow()">+ ADD NEW ITEM</button>
 
             <div class="footer">
                 <div class="total-container">
-                    <span class="total-label">GRAND TOTAL :</span>
+                    <span class="total-label">GRAND TOTAL</span>
                     <span class="total-amount" id="final-total">0.00</span>
                 </div>
             </div>
         </div>
 
         <div class="preview-box no-print-area">
-            <div style="background: #333; color: white; text-align: center; font-size: 12px; padding: 5px;">LIVE PREVIEW</div>
+            <div style="background: #202124; color: white; text-align: center; font-size: 11px; padding: 8px; font-weight: bold; letter-spacing: 1px;">LIVE PREVIEW</div>
             <div id="preview-display" class="preview-content"></div>
         </div>
     </div>
@@ -187,19 +183,17 @@
     <script>
         document.getElementById('cur-date').value = new Date().toLocaleDateString();
 
-        // Logo එක පූරණය කිරීමේ function එක
         function loadLogo(event) {
             const image = document.getElementById('logo-img');
             const placeholder = document.getElementById('placeholder-text');
             const file = event.target.files[0];
-            
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     image.src = e.target.result;
                     image.style.display = 'block';
                     placeholder.style.display = 'none';
-                    syncPreview(); // Preview එකත් update කරන්න
+                    setTimeout(syncPreview, 100);
                 }
                 reader.readAsDataURL(file);
             }
@@ -209,8 +203,8 @@
             const body = document.getElementById('table-body');
             const row = body.insertRow();
             row.innerHTML = `
-                <td><input type="text" class="item-input" placeholder="Item description..."></td>
-                <td><input type="number" class="num-input rate" value="0" oninput="calculate()"></td>
+                <td><input type="text" class="item-input" placeholder="Enter item details..."></td>
+                <td><input type="number" class="num-input rate" value="0.00" oninput="calculate()"></td>
                 <td><input type="number" class="num-input qty" value="0" oninput="calculate()"></td>
                 <td style="font-weight: bold;"><span class="subtotal">0.00</span></td>
             `;
@@ -233,17 +227,13 @@
         }
 
         function syncPreview() {
-            // පින්තූරය ඇතුළු සියලුම දේ Preview එකට කොපි කිරීම
             const wrapper = document.getElementById('invoice-wrapper');
             const clone = wrapper.cloneNode(true);
-            
-            // Preview එකේදී input fields වල අගයන් නිවැරදිව පෙන්වීමට
             const originalInputs = wrapper.querySelectorAll('input');
             const clonedInputs = clone.querySelectorAll('input');
             originalInputs.forEach((input, index) => {
                 clonedInputs[index].value = input.value;
             });
-
             document.getElementById('preview-display').innerHTML = '';
             document.getElementById('preview-display').appendChild(clone);
         }
@@ -252,30 +242,24 @@
 
         function generatePDF() {
             const element = document.getElementById('invoice-wrapper');
-            
             element.classList.add('pdf-mode');
-            const noPrintElements = element.querySelectorAll('.no-print');
-            noPrintElements.forEach(el => el.style.display = 'none');
-
-            // Logo එකක් නැත්නම් ඒ කොටුව සම්පූර්ණයෙන්ම සඟවන්න (හිස් අවකාශය ඉතිරි නොකිරීමට)
-            const logoImg = document.getElementById('logo-img');
-            const logoContainer = element.querySelector('.logo-container');
-            if (logoImg.style.display === 'none' || !logoImg.src) {
-                logoContainer.style.display = 'none';
-            }
-
+            
             const opt = {
                 margin: 0,
-                filename: 'Kumara_Auto_Invoice.pdf',
+                filename: 'Kumara_Auto_Premium_Invoice.pdf',
                 image: { type: 'jpeg', quality: 1 },
-                html2canvas: { scale: 3, useCORS: true, width: 794 }, // Resolution එක වැඩි කළා
+                html2canvas: { 
+                    scale: 4, 
+                    useCORS: true, 
+                    letterRendering: true,
+                    scrollX: 0,
+                    scrollY: 0
+                },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
             html2pdf().from(element).set(opt).save().then(() => {
                 element.classList.remove('pdf-mode');
-                noPrintElements.forEach(el => el.style.display = 'block');
-                logoContainer.style.display = 'flex'; // නැවත පෙන්වන්න
             });
         }
     </script>
