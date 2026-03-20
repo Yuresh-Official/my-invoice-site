@@ -3,47 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kumara Auto Mobile - Auto-Scale Invoice</title>
+    <title>Kumara Auto Mobile - Dynamic Invoice</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root { --primary: #1a2a3a; --accent: #d35400; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; padding: 10px; display: flex; flex-direction: column; align-items: center; }
 
         .controls { width: 100%; max-width: 800px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
         .btn { flex: 1; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; text-transform: uppercase; min-width: 140px; }
-        @media (max-width: 600px) { .btn { width: 100%; flex: none; } }
-
         .btn-add { background: #2980b9; }
         .btn-download { background: #27ae60; }
-        .btn-dev { background: #34495e; } 
+        .btn-dev { background: #34495e; }
 
         .invoice-container { width: 100%; overflow-x: auto; display: flex; justify-content: flex-start; padding-bottom: 20px; }
-
         #invoice-wrapper { 
             background: white; width: 210mm; height: 297mm; padding: 30px 45px; 
             box-shadow: 0 0 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; 
             overflow: hidden; position: relative; flex-shrink: 0;
         }
 
-        /* Essential Scaling Container */
-        #scalable-content {
-            display: flex; flex-direction: column; height: 100%; transition: all 0.2s ease;
-            transform-origin: top center;
-        }
+        #scalable-content { display: flex; flex-direction: column; height: 100%; transform-origin: top center; }
 
+        /* Header Scaling */
         .header { border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .company-info { width: 75%; }
-        .editable-title { font-size: 2.4em; font-weight: 900; color: #000; border: none; width: 100%; outline: none; text-transform: uppercase; background: transparent; }
+        .company-info { width: 75%; overflow: hidden; }
+        .editable-title { 
+            font-size: 2.4em; font-weight: 900; color: #000; border: none; width: 100%; 
+            outline: none; text-transform: uppercase; background: transparent;
+            display: block; white-space: nowrap;
+        }
         .editable-sub { font-size: 0.95em; color: #444; border: none; width: 100%; outline: none; font-weight: 600; margin-top: 2px; background: transparent; }
 
         .logo-box { width: 90px; height: 90px; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
+        /* Conditional Hiding */
         .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; background: #fdfdfd; padding: 10px; border: 1px solid #eee; }
         .detail-box label { font-size: 0.75em; font-weight: 800; color: var(--accent); text-transform: uppercase; }
         .detail-box input { width: 100%; border: none; border-bottom: 1px solid #ddd; padding: 2px 0; font-size: 1.05em; outline: none; background: transparent; }
+        
+        .pdf-mode .hide-if-empty { display: none !important; }
 
         #table-area { flex-grow: 1; margin-bottom: 10px; }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
@@ -71,43 +71,43 @@
 <body>
 
     <div class="controls">
-        <button class="btn btn-add" onclick="addNewRow()">+ Add Part or Service</button>
+        <button class="btn btn-add" onclick="addNewRow()">+ Add Service</button>
         <button class="btn btn-download" onclick="generatePDF()">Download PDF</button>
-        <button class="btn btn-dev" onclick="toggleModal()">About Developer</button>
+        <button class="btn btn-dev" onclick="toggleModal()">Developer</button>
     </div>
 
     <div class="invoice-container">
         <div id="invoice-wrapper">
             <div id="scalable-content">
                 <div class="header">
-                    <div class="company-info">
-                        <input type="text" class="editable-title" value="KUMARA AUTO MOBILE" oninput="autoScale()">
+                    <div class="company-info" id="title-parent">
+                        <input type="text" id="main-title" class="editable-title" value="KUMARA AUTO MOBILE" oninput="scaleHeaderTitle()">
                         <input type="text" class="editable-sub" value="DEALS IN ALL KINDS OF FORKLIFTS, JCB & HEAVY EQUIPMENT SPARE PARTS">
                         <input type="text" class="editable-sub" value="Tel: 0565762783 | UAE" style="color: #1a73e8;">
                     </div>
                     <div class="logo-box" onclick="document.getElementById('fileInput').click()">
-                        <span class="logo-text" style="font-size: 10px; color: #999; text-align: center;">LOGO</span>
+                        <span class="logo-text" style="font-size: 10px; color: #999;">LOGO</span>
                         <img id="logo-preview" style="display:none;">
                         <input type="file" id="fileInput" hidden onchange="previewImage(this)">
                     </div>
                 </div>
 
                 <div class="details-grid">
-                    <div class="detail-box">
-                        <label>Customer Name / اسم العميل</label>
-                        <input type="text" placeholder="Type name..." oninput="autoScale()">
+                    <div class="detail-box" id="box-customer">
+                        <label>Customer Name</label>
+                        <input type="text" placeholder="Name" oninput="checkInput(this, 'box-customer')">
                     </div>
                     <div class="detail-box">
-                        <label>Date / التاريخ</label>
+                        <label>Date</label>
                         <input type="text" id="currentDate">
                     </div>
-                    <div class="detail-box">
-                        <label>Vehicle No / رقم السيارة</label>
-                        <input type="text" placeholder="Vehicle number" oninput="autoScale()">
+                    <div class="detail-box" id="box-vno">
+                        <label>Vehicle No</label>
+                        <input type="text" placeholder="Enter No" oninput="checkInput(this, 'box-vno')">
                     </div>
-                    <div class="detail-box" style="text-align: right;">
-                        <label>Model / الموديل</label>
-                        <input type="text" placeholder="Vehicle model" style="text-align: right;" oninput="autoScale()">
+                    <div class="detail-box" id="box-model" style="text-align: right;">
+                        <label>Model</label>
+                        <input type="text" placeholder="Enter Model" style="text-align: right;" oninput="checkInput(this, 'box-model')">
                     </div>
                 </div>
 
@@ -115,7 +115,7 @@
                     <table id="invoiceTable">
                         <thead>
                             <tr>
-                                <th style="width: 50%;">PART DESCRIPTION / JOB (الوصف)</th>
+                                <th style="width: 50%;">DESCRIPTION</th>
                                 <th style="width: 15%;">RATE</th>
                                 <th style="width: 10%;">QTY</th>
                                 <th style="width: 20%; text-align: right;">AMOUNT</th>
@@ -128,16 +128,14 @@
 
                 <div class="totals-area">
                     <div class="total-row grand-total">
-                        <span>TOTAL (الإجمالي)</span>
+                        <span>TOTAL</span>
                         <span id="grandTotal">0.00</span>
                     </div>
                 </div>
 
                 <div class="footer">
-                    <p style="font-weight: bold; margin-bottom: 5px;">THANK YOU FOR YOUR BUSINESS | شكරා لتعاملكم معنا</p>
-                    <p>Warranty: <input type="text" class="warranty-input" value="06"> Months | <input type="text" class="warranty-input" value="06" dir="rtl"> شهور</p>
-                    <p>No Warranty on Electrical Parts | قطع الغيار الكهربائية لا تشمل الضمان</p>
-                    <p>Goods once sold will not be returned | البضاعة التي تباع لا ترد</p>
+                    <p style="font-weight: bold; margin-bottom: 5px;">THANK YOU | شكරා لكم</p>
+                    <p>Warranty: <input type="text" class="warranty-input" value="06"> Months</p>
                 </div>
             </div>
         </div>
@@ -145,12 +143,9 @@
 
     <div id="devModal">
         <div class="modal-content">
-            <h2>SYSTEM DEVELOPER</h2>
-            <p style="font-size: 20px; font-weight: 900; color: #d35400; margin-bottom: 15px;">Yuresh Kavindu Sumanasinha</p>
-            <p>මෙම පද්ධතිය "Kumara Auto Mobile" ආයතනය වෙනුවෙන් මා විසින් ඉතා කැපවීමෙන් නිර්මාණය කරන ලදී.</p>
-            <hr style="margin: 15px 0;">
-            <p dir="rtl" style="font-size: 16px; font-weight: bold;">تم تطوير هذا النظام لضمان سير العمل بكل سهولة واحترافية.</p>
-            <button class="close-btn" onclick="toggleModal()">Close / වසන්න</button>
+            <h2>DEVELOPER</h2>
+            <p style="font-size: 20px; font-weight: 900; color: #d35400;">Yuresh Kavindu Sumanasinha</p>
+            <button class="close-btn" onclick="toggleModal()">Close</button>
         </div>
     </div>
 
@@ -162,31 +157,38 @@
             modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
         }
 
-        function previewImage(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    const img = document.getElementById('logo-preview');
-                    img.src = e.target.result; img.style.display = 'block';
-                    document.querySelector('.logo-text').style.display = 'none';
-                    autoScale();
-                }
-                reader.readAsDataURL(input.files[0]);
+        function scaleHeaderTitle() {
+            const title = document.getElementById('main-title');
+            let fontSize = 2.4; 
+            title.style.fontSize = fontSize + 'em';
+            while (title.scrollWidth > title.offsetWidth && fontSize > 1) {
+                fontSize -= 0.1;
+                title.style.fontSize = fontSize + 'em';
             }
         }
+
+        function checkInput(el, id) {
+            const box = document.getElementById(id);
+            if (el.value.trim() === "") { box.classList.add('hide-if-empty'); } 
+            else { box.classList.remove('hide-if-empty'); }
+        }
+
+        // Initialize empty boxes
+        document.querySelectorAll('.detail-box input').forEach(inp => {
+            if(inp.placeholder.includes("Enter")) inp.parentElement.classList.add('hide-if-empty');
+        });
 
         function addNewRow() {
             const tbody = document.getElementById('tableBody');
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><input type="text" class="item-desc" placeholder="Enter detail..." oninput="autoScale()"></td>
+                <td><input type="text" class="item-desc" placeholder="..."></td>
                 <td><input type="number" class="item-num rate" value="0.00" oninput="updateCalculation()"></td>
                 <td><input type="number" class="item-num qty" value="1" oninput="updateCalculation()"></td>
                 <td style="text-align: right; font-weight: bold;"><span class="subtotal">0.00</span></td>
                 <td class="btn-remove"><button onclick="this.parentElement.parentElement.remove(); updateCalculation();" class="btn-remove">×</button></td>
             `;
             tbody.appendChild(row);
-            autoScale();
         }
 
         function updateCalculation() {
@@ -199,22 +201,6 @@
                 total += sub;
             });
             document.getElementById('grandTotal').innerText = total.toLocaleString(undefined, {minimumFractionDigits: 2});
-            autoScale();
-        }
-
-        // --- SUPER AUTO-SCALE FUNCTION ---
-        function autoScale() {
-            const content = document.getElementById('scalable-content');
-            const wrapper = document.getElementById('invoice-wrapper');
-            let scaleValue = 100;
-            content.style.fontSize = '16px'; 
-            let safety = 0;
-            // Shinks font size dynamically if content height exceeds A4 height
-            while (content.scrollHeight > wrapper.clientHeight - 40 && scaleValue > 30 && safety < 60) {
-                scaleValue -= 1;
-                content.style.fontSize = scaleValue + '%';
-                safety++;
-            }
         }
 
         function generatePDF() {
@@ -222,7 +208,7 @@
             document.body.classList.add('pdf-mode');
             const opt = {
                 margin: 0,
-                filename: 'Kumara_Auto_Invoice.pdf',
+                filename: 'Invoice.pdf',
                 image: { type: 'jpeg', quality: 1 },
                 html2canvas: { scale: 3, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
