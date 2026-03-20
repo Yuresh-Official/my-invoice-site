@@ -3,75 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kumara Auto Mobile - Professional Garage Invoice</title>
+    <title>Kumara Auto Mobile - Auto-Scale Invoice</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root { --primary: #1a2a3a; --accent: #d35400; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            background-color: #f0f2f5; 
-            padding: 10px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; padding: 10px; display: flex; flex-direction: column; align-items: center; }
 
-        /* Responsive Buttons Area */
-        .controls { 
-            width: 100%; 
-            max-width: 800px; 
-            margin-bottom: 15px; 
-            display: flex; 
-            gap: 10px; 
-            flex-wrap: wrap; 
-        }
-
-        .btn { 
-            flex: 1; 
-            padding: 12px; 
-            border: none; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            color: white; 
-            text-transform: uppercase; 
-            min-width: 140px;
-            font-size: 14px;
-        }
-        
-        @media (max-width: 600px) {
-            .btn { width: 100%; flex: none; }
-            body { padding: 5px; }
-        }
+        .controls { width: 100%; max-width: 800px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; text-transform: uppercase; min-width: 140px; }
+        @media (max-width: 600px) { .btn { width: 100%; flex: none; } }
 
         .btn-add { background: #2980b9; }
         .btn-download { background: #27ae60; }
         .btn-dev { background: #34495e; } 
 
-        /* Scrollable container for Mobile */
-        .invoice-container {
-            width: 100%;
-            overflow-x: auto;
-            display: flex;
-            justify-content: flex-start;
-            padding-bottom: 20px;
-        }
+        .invoice-container { width: 100%; overflow-x: auto; display: flex; justify-content: flex-start; padding-bottom: 20px; }
 
         #invoice-wrapper { 
-            background: white; 
-            width: 210mm; /* Keeps standard A4 width */
-            min-height: 297mm; 
-            padding: 30px 45px; 
-            box-shadow: 0 0 15px rgba(0,0,0,0.1); 
-            display: flex; 
-            flex-direction: column; 
-            position: relative;
-            flex-shrink: 0; /* Prevents shrinking on mobile */
+            background: white; width: 210mm; height: 297mm; padding: 30px 45px; 
+            box-shadow: 0 0 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; 
+            overflow: hidden; position: relative; flex-shrink: 0;
         }
 
-        #scalable-content { display: flex; flex-direction: column; height: 100%; }
+        /* Essential Scaling Container */
+        #scalable-content {
+            display: flex; flex-direction: column; height: 100%; transition: all 0.2s ease;
+            transform-origin: top center;
+        }
 
         .header { border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
         .company-info { width: 75%; }
@@ -84,8 +44,6 @@
         .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; background: #fdfdfd; padding: 10px; border: 1px solid #eee; }
         .detail-box label { font-size: 0.75em; font-weight: 800; color: var(--accent); text-transform: uppercase; }
         .detail-box input { width: 100%; border: none; border-bottom: 1px solid #ddd; padding: 2px 0; font-size: 1.05em; outline: none; background: transparent; }
-
-        .pdf-mode .empty-data { display: none !important; }
 
         #table-area { flex-grow: 1; margin-bottom: 10px; }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
@@ -123,7 +81,7 @@
             <div id="scalable-content">
                 <div class="header">
                     <div class="company-info">
-                        <input type="text" class="editable-title" value="KUMARA AUTO MOBILE">
+                        <input type="text" class="editable-title" value="KUMARA AUTO MOBILE" oninput="autoScale()">
                         <input type="text" class="editable-sub" value="DEALS IN ALL KINDS OF FORKLIFTS, JCB & HEAVY EQUIPMENT SPARE PARTS">
                         <input type="text" class="editable-sub" value="Tel: 0565762783 | UAE" style="color: #1a73e8;">
                     </div>
@@ -135,21 +93,21 @@
                 </div>
 
                 <div class="details-grid">
-                    <div class="detail-box" id="box-customer">
+                    <div class="detail-box">
                         <label>Customer Name / اسم العميل</label>
-                        <input type="text" placeholder="Type name..." oninput="checkEmpty(this, 'box-customer')">
+                        <input type="text" placeholder="Type name..." oninput="autoScale()">
                     </div>
                     <div class="detail-box">
                         <label>Date / التاريخ</label>
                         <input type="text" id="currentDate">
                     </div>
-                    <div class="detail-box" id="box-vehicle">
+                    <div class="detail-box">
                         <label>Vehicle No / رقم السيارة</label>
-                        <input type="text" placeholder="Vehicle number" oninput="checkEmpty(this, 'box-vehicle')">
+                        <input type="text" placeholder="Vehicle number" oninput="autoScale()">
                     </div>
-                    <div class="detail-box" id="box-model" style="text-align: right;">
+                    <div class="detail-box" style="text-align: right;">
                         <label>Model / الموديل</label>
-                        <input type="text" placeholder="Vehicle model" style="text-align: right;" oninput="checkEmpty(this, 'box-model')">
+                        <input type="text" placeholder="Vehicle model" style="text-align: right;" oninput="autoScale()">
                     </div>
                 </div>
 
@@ -176,8 +134,8 @@
                 </div>
 
                 <div class="footer">
-                    <p style="font-weight: bold; margin-bottom: 5px;">THANK YOU FOR YOUR BUSINESS | شكرا لتعاملكم معنا</p>
-                    <p>Warranty Period: <input type="text" class="warranty-input" value="06"> Months | فترة الضمان: <input type="text" class="warranty-input" value="06"> شهور</p>
+                    <p style="font-weight: bold; margin-bottom: 5px;">THANK YOU FOR YOUR BUSINESS | شكරා لتعاملكم معنا</p>
+                    <p>Warranty: <input type="text" class="warranty-input" value="06"> Months | <input type="text" class="warranty-input" value="06" dir="rtl"> شهور</p>
                     <p>No Warranty on Electrical Parts | قطع الغيار الكهربائية لا تشمل الضمان</p>
                     <p>Goods once sold will not be returned | البضاعة التي تباع لا ترد</p>
                 </div>
@@ -189,9 +147,9 @@
         <div class="modal-content">
             <h2>SYSTEM DEVELOPER</h2>
             <p style="font-size: 20px; font-weight: 900; color: #d35400; margin-bottom: 15px;">Yuresh Kavindu Sumanasinha</p>
-            <p style="font-size: 15px; color: #333; margin-bottom: 10px;">මෙම පද්ධතිය "Kumara Auto Mobile" ආයතනයේ අවශ්‍යතාවයන්ට අනුකූලව නිර්මාණය කරන ලදී.</p>
-            <hr>
-            <p dir="rtl" style="font-size: 16px; margin-top: 10px; font-weight: bold;">تم تطوير هذا النظام خصيصاً لـ "Kumara Auto Mobile" لضمان أفضل خدمة.</p>
+            <p>මෙම පද්ධතිය "Kumara Auto Mobile" ආයතනය වෙනුවෙන් මා විසින් ඉතා කැපවීමෙන් නිර්මාණය කරන ලදී.</p>
+            <hr style="margin: 15px 0;">
+            <p dir="rtl" style="font-size: 16px; font-weight: bold;">تم تطوير هذا النظام لضمان سير العمل بكل سهولة واحترافية.</p>
             <button class="close-btn" onclick="toggleModal()">Close / වසන්න</button>
         </div>
     </div>
@@ -204,11 +162,6 @@
             modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
         }
 
-        function checkEmpty(el, id) {
-            // Logic to keep spacing consistent
-            autoScale();
-        }
-
         function previewImage(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -216,6 +169,7 @@
                     const img = document.getElementById('logo-preview');
                     img.src = e.target.result; img.style.display = 'block';
                     document.querySelector('.logo-text').style.display = 'none';
+                    autoScale();
                 }
                 reader.readAsDataURL(input.files[0]);
             }
@@ -225,13 +179,14 @@
             const tbody = document.getElementById('tableBody');
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><input type="text" class="item-desc" placeholder="Part name..."></td>
+                <td><input type="text" class="item-desc" placeholder="Enter detail..." oninput="autoScale()"></td>
                 <td><input type="number" class="item-num rate" value="0.00" oninput="updateCalculation()"></td>
                 <td><input type="number" class="item-num qty" value="1" oninput="updateCalculation()"></td>
                 <td style="text-align: right; font-weight: bold;"><span class="subtotal">0.00</span></td>
                 <td class="btn-remove"><button onclick="this.parentElement.parentElement.remove(); updateCalculation();" class="btn-remove">×</button></td>
             `;
             tbody.appendChild(row);
+            autoScale();
         }
 
         function updateCalculation() {
@@ -244,6 +199,22 @@
                 total += sub;
             });
             document.getElementById('grandTotal').innerText = total.toLocaleString(undefined, {minimumFractionDigits: 2});
+            autoScale();
+        }
+
+        // --- SUPER AUTO-SCALE FUNCTION ---
+        function autoScale() {
+            const content = document.getElementById('scalable-content');
+            const wrapper = document.getElementById('invoice-wrapper');
+            let scaleValue = 100;
+            content.style.fontSize = '16px'; 
+            let safety = 0;
+            // Shinks font size dynamically if content height exceeds A4 height
+            while (content.scrollHeight > wrapper.clientHeight - 40 && scaleValue > 30 && safety < 60) {
+                scaleValue -= 1;
+                content.style.fontSize = scaleValue + '%';
+                safety++;
+            }
         }
 
         function generatePDF() {
@@ -253,7 +224,7 @@
                 margin: 0,
                 filename: 'Kumara_Auto_Invoice.pdf',
                 image: { type: 'jpeg', quality: 1 },
-                html2canvas: { scale: 2, useCORS: true },
+                html2canvas: { scale: 3, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             html2pdf().from(element).set(opt).save().then(() => {
