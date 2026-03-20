@@ -25,90 +25,48 @@
         #invoice-wrapper { 
             background: white; 
             width: var(--invoice-width); 
-            min-height: var(--invoice-height); 
+            height: var(--invoice-height); /* Fixed Height to prevent overflow */
             padding: 0; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             overflow: hidden;
             position: relative;
+            display: flex;
+            flex-direction: column;
         }
 
-        .preview-box { width: 320px; height: 450px; border: 2px solid #ced4da; border-radius: 12px; position: sticky; top: 20px; background: #fff; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .preview-content { transform: scale(0.4); transform-origin: top left; pointer-events: none; }
-
-        .top-stripe { background: var(--primary-color); height: 15px; width: 100%; }
+        .top-stripe { background: var(--primary-color); height: 15px; width: 100%; flex-shrink: 0; }
         
-        .header { padding: 40px; display: flex; justify-content: space-between; align-items: center; background: var(--secondary-color); border-bottom: 1px solid #dee2e6; }
+        .header { padding: 30px 40px; display: flex; justify-content: space-between; align-items: center; background: var(--secondary-color); border-bottom: 1px solid #dee2e6; flex-shrink: 0; }
         .company-info h1 { font-size: 28px; font-weight: 800; color: #202124; text-transform: uppercase; margin-bottom: 5px; }
         .company-info p { font-size: 12px; color: #5f6368; font-weight: 600; line-height: 1.5; }
         
-        /* 1:1 Logo Style */
-        .logo-container {
-            width: 100px;
-            height: 100px;
-            border: 2px dashed #1a73e8;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            overflow: hidden;
-            background: #fff;
-            transition: 0.2s;
-        }
-        .logo-container:hover { border-color: #1557b0; background: #f1f3f4; }
-        .logo-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* පින්තූරය කොටුවට සරිලන සේ කැපී පෙනේ */
-            display: none;
-        }
-        .logo-placeholder { font-size: 11px; color: var(--primary-color); font-weight: bold; text-align: center; padding: 5px; }
+        .logo-container { width: 80px; height: 80px; border: 2px dashed #1a73e8; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; background: #fff; }
+        .logo-container img { width: 100%; height: 100%; object-fit: cover; display: none; }
 
-        .client-info { padding: 40px; display: flex; justify-content: space-between; font-size: 14px; background: #fff; }
-        .input-line { border: none; border-bottom: 2px solid #eee; outline: none; padding: 5px 0; font-weight: 700; width: 250px; font-size: 15px; transition: 0.3s; }
-        .input-line:focus { border-bottom-color: var(--primary-color); }
+        .client-info { padding: 20px 40px; display: flex; justify-content: space-between; font-size: 14px; background: #fff; flex-shrink: 0; }
+        .input-line { border: none; border-bottom: 2px solid #eee; outline: none; padding: 5px 0; font-weight: 700; width: 250px; font-size: 15px; }
 
-        .items-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .items-table th { 
-            background: #202124; 
-            color: #fff;
-            padding: 15px 10px; 
-            font-size: 13px; 
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .items-table th:first-child { text-align: left; padding-left: 40px; } 
-        .items-table th:last-child { text-align: right; padding-right: 40px; } 
-
-        .items-table td { padding: 15px 10px; border-bottom: 1px solid #f1f3f4; text-align: center; }
-        .items-table td:first-child { text-align: left; padding-left: 40px; }
-        .items-table td:last-child { text-align: right; padding-right: 40px; font-weight: 700; color: #202124; }
+        /* Scrollable but contained table area */
+        .table-content { flex-grow: 1; overflow: hidden; padding: 0 0 20px 0; }
+        .items-table { width: 100%; border-collapse: collapse; }
+        .items-table th { background: #202124; color: #fff; padding: 12px 10px; font-size: 13px; text-transform: uppercase; position: sticky; top: 0; }
+        .items-table td { padding: 8px 10px; border-bottom: 1px solid #f1f3f4; text-align: center; }
         
-        .item-input { border: none; width: 100%; outline: none; font-size: 14px; font-weight: 500; background: transparent; }
-        .num-input { width: 85px; padding: 8px; border: 1px solid #dadce0; border-radius: 6px; text-align: center; font-size: 14px; outline: none; }
+        .item-input { border: none; width: 100%; outline: none; font-size: inherit; font-weight: 500; background: transparent; }
+        .num-input { width: 70px; padding: 5px; border: 1px solid #dadce0; border-radius: 4px; text-align: center; font-size: inherit; }
 
-        .add-row { margin: 25px 40px; background: #34a853; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .add-row:hover { background: #2d8a46; transform: translateY(-1px); }
+        .add-row { margin: 15px 40px; background: #34a853; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
 
-        .footer { margin-top: 50px; padding: 0 40px 60px; display: flex; justify-content: flex-end; }
-        .total-container { 
-            background: var(--secondary-color);
-            border-left: 5px solid var(--primary-color);
-            padding: 20px 30px;
-            width: 300px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            border-radius: 4px;
-        }
-        .total-label { font-size: 13px; font-weight: 700; color: #5f6368; margin-bottom: 5px; }
-        .total-amount { font-size: 28px; font-weight: 900; color: var(--primary-color); }
+        .footer { padding: 20px 40px 40px; display: flex; justify-content: flex-end; flex-shrink: 0; }
+        .total-container { background: var(--secondary-color); border-left: 5px solid var(--primary-color); padding: 15px 25px; width: 250px; text-align: right; }
+        .total-amount { font-size: 24px; font-weight: 900; color: var(--primary-color); }
 
-        /* PDF Cleanup */
-        .pdf-mode .logo-container { border: none !important; }
-        .pdf-mode .logo-placeholder, .pdf-mode .add-row { display: none !important; }
-        .pdf-mode .num-input { border: none !important; appearance: none; -moz-appearance: textfield; }
+        /* Dynamic Sizing Classes */
+        .font-small td, .font-small input { font-size: 12px !important; }
+        .font-xsmall td, .font-xsmall input { font-size: 10px !important; padding: 4px 10px !important; }
 
+        .pdf-mode .add-row, .pdf-mode .logo-placeholder { display: none !important; }
+        .pdf-mode .num-input { border: none !important; }
     </style>
 </head>
 <body>
@@ -126,9 +84,8 @@
                     <p>DEALS IN ALL KINDS OF FORKLIFTS, JCB & HEAVY EQUIPMENT SPARE PARTS</p>
                     <p>Tel: 0565762783 | UAE</p>
                 </div>
-                
                 <div class="logo-container" onclick="document.getElementById('logo-input').click()">
-                    <span class="logo-placeholder" id="placeholder-text">Click to Add<br>Square Logo<br>(1:1)</span>
+                    <span class="logo-placeholder" style="font-size: 10px; text-align: center;">Add Logo</span>
                     <img id="logo-img" src="" alt="Logo">
                     <input type="file" id="logo-input" accept="image/*" style="display: none;" onchange="loadLogo(event)">
                 </div>
@@ -145,38 +102,28 @@
                 </div>
             </div>
 
-            <table class="items-table">
-                <thead>
-                    <tr>
-                        <th width="50%">Description</th>
-                        <th width="15%">Rate</th>
-                        <th width="10%">Qty</th>
-                        <th width="25%">Amount</th>
-                    </tr>
-                </thead>
-                <tbody id="table-body">
-                    <tr>
-                        <td><input type="text" class="item-input" placeholder="Enter item details..."></td>
-                        <td><input type="number" class="num-input rate" value="0.00" oninput="calculate()"></td>
-                        <td><input type="number" class="num-input qty" value="0" oninput="calculate()"></td>
-                        <td><span class="subtotal">0.00</span></td>
-                    </tr>
-                </tbody>
-            </table>
-            
-            <button class="add-row no-print" onclick="addNewRow()">+ ADD NEW ITEM</button>
+            <div class="table-content">
+                <table class="items-table" id="items-table">
+                    <thead>
+                        <tr>
+                            <th width="50%">Description</th>
+                            <th width="15%">Rate</th>
+                            <th width="10%">Qty</th>
+                            <th width="25%">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        </tbody>
+                </table>
+                <button class="add-row no-print" onclick="addNewRow()">+ ADD NEW ITEM</button>
+            </div>
 
             <div class="footer">
                 <div class="total-container">
-                    <span class="total-label">GRAND TOTAL</span>
+                    <span style="font-size: 12px; font-weight: bold; color: #5f6368;">GRAND TOTAL</span><br>
                     <span class="total-amount" id="final-total">0.00</span>
                 </div>
             </div>
-        </div>
-
-        <div class="preview-box no-print-area">
-            <div style="background: #202124; color: white; text-align: center; font-size: 11px; padding: 8px; font-weight: bold; letter-spacing: 1px;">LIVE PREVIEW</div>
-            <div id="preview-display" class="preview-content"></div>
         </div>
     </div>
 
@@ -185,30 +132,40 @@
 
         function loadLogo(event) {
             const image = document.getElementById('logo-img');
-            const placeholder = document.getElementById('placeholder-text');
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    image.src = e.target.result;
-                    image.style.display = 'block';
-                    placeholder.style.display = 'none';
-                    setTimeout(syncPreview, 100);
-                }
+                reader.onload = e => { image.src = e.target.result; image.style.display = 'block'; }
                 reader.readAsDataURL(file);
             }
         }
 
         function addNewRow() {
             const body = document.getElementById('table-body');
+            const rowCount = body.rows.length;
+            
+            // Limit check is managed by font scaling
             const row = body.insertRow();
             row.innerHTML = `
-                <td><input type="text" class="item-input" placeholder="Enter item details..."></td>
+                <td><input type="text" class="item-input" placeholder="Item description..."></td>
                 <td><input type="number" class="num-input rate" value="0.00" oninput="calculate()"></td>
                 <td><input type="number" class="num-input qty" value="0" oninput="calculate()"></td>
-                <td style="font-weight: bold;"><span class="subtotal">0.00</span></td>
+                <td style="font-weight: bold; text-align: right; padding-right: 40px;"><span class="subtotal">0.00</span></td>
             `;
-            syncPreview();
+            updateTableStyle();
+        }
+
+        function updateTableStyle() {
+            const table = document.getElementById('items-table');
+            const rowCount = document.getElementById('table-body').rows.length;
+            
+            // Auto-scaling font size based on row count
+            table.classList.remove('font-small', 'font-xsmall');
+            if (rowCount > 10 && rowCount <= 18) {
+                table.classList.add('font-small');
+            } else if (rowCount > 18) {
+                table.classList.add('font-xsmall');
+            }
         }
 
         function calculate() {
@@ -223,22 +180,7 @@
                 grand += val;
             }
             document.getElementById('final-total').innerText = grand.toLocaleString(undefined, {minimumFractionDigits: 2});
-            syncPreview();
         }
-
-        function syncPreview() {
-            const wrapper = document.getElementById('invoice-wrapper');
-            const clone = wrapper.cloneNode(true);
-            const originalInputs = wrapper.querySelectorAll('input');
-            const clonedInputs = clone.querySelectorAll('input');
-            originalInputs.forEach((input, index) => {
-                clonedInputs[index].value = input.value;
-            });
-            document.getElementById('preview-display').innerHTML = '';
-            document.getElementById('preview-display').appendChild(clone);
-        }
-
-        syncPreview();
 
         function generatePDF() {
             const element = document.getElementById('invoice-wrapper');
@@ -246,15 +188,9 @@
             
             const opt = {
                 margin: 0,
-                filename: 'Kumara_Auto_Premium_Invoice.pdf',
+                filename: 'Kumara_Auto_Invoice.pdf',
                 image: { type: 'jpeg', quality: 1 },
-                html2canvas: { 
-                    scale: 4, 
-                    useCORS: true, 
-                    letterRendering: true,
-                    scrollX: 0,
-                    scrollY: 0
-                },
+                html2canvas: { scale: 3, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
@@ -262,6 +198,9 @@
                 element.classList.remove('pdf-mode');
             });
         }
+
+        // Initialize with one row
+        addNewRow();
     </script>
 </body>
 </html>
